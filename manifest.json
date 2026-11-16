@@ -1,0 +1,17 @@
+{
+  "name": "Rabta",
+  "short_name": "Rabta",
+  "description": "Apne shehr aur gaon ke karigar aur gariyon se aasan rabta",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F8F6",
+  "theme_color": "#0F6B4A",
+  "lang": "ur",
+  "icons": [
+    { "src": "rabta-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "rabta-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "rabta-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "rabta-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
