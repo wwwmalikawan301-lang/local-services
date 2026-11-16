@@ -51,7 +51,7 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 /* ===== Cards, buttons ===== */
 .h2 { font-size: 14.5px; font-weight: 600; margin: 4px 2px 0; }
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
-.cat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 11px 2px 9px; text-align: center; font-size: 11.5px; font-weight: 500; line-height: 1.3; box-shadow: var(--shadow); }
+.cat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 11px 2px 9px; text-align: center; font-size: 12.5px; font-weight: 500; line-height: 1.3; box-shadow: var(--shadow); }
 .cat:active, .card:active { transform: scale(0.98); }
 .cat .ci { width: 42px; height: 42px; margin: 0 auto 6px; border-radius: 14px; background: var(--green-t); color: var(--green); display: flex; align-items: center; justify-content: center; }
 .note { display: flex; gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 13px; font-size: 12.5px; color: var(--muted); }
@@ -88,8 +88,8 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 .btn.ed { background: #EEF1EF; color: var(--text); }
 .btn.no { background: var(--danger-t); color: var(--danger); }
 .btn.ghost { background: #EEF1EF; color: var(--text); }
-.tag { display: inline-block; background: var(--green-t); color: var(--green); border-radius: 10px; padding: 2px 9px; font-size: 11.5px; font-weight: 500; margin-top: 4px; }
-.bdg { display: inline-block; border-radius: 10px; padding: 2px 9px; font-size: 11.5px; background: #FFF3DC; color: #8A5A00; font-weight: 500; }
+.tag { display: inline-block; background: var(--green-t); color: var(--green); border-radius: 10px; padding: 2px 9px; font-size: 12px; font-weight: 500; margin-top: 4px; }
+.bdg { display: inline-block; border-radius: 10px; padding: 2px 9px; font-size: 12px; background: #FFF3DC; color: #8A5A00; font-weight: 500; }
 
 .empty { text-align: center; padding: 38px 18px; color: var(--muted); font-size: 14px; line-height: 1.8; }
 .empty svg.i { width: 46px; height: 46px; color: #B9C9C0; margin-bottom: 6px; }
@@ -132,7 +132,7 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 
 /* ===== Bottom nav ===== */
 #nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; background: var(--card); border-top: 1px solid var(--line); padding: 8px 6px calc(6px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,0.05); }
-#nav button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); padding: 4px 2px; position: relative; }
+#nav button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: var(--muted); padding: 4px 2px; position: relative; }
 #nav button svg.i { width: 24px; height: 24px; }
 #nav button.on { color: var(--green); font-weight: 600; }
 #nav button.on::before { content: ""; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); width: 26px; height: 3px; background: var(--amber); border-radius: 3px; }
@@ -148,6 +148,18 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 .opt.on { color: var(--green); font-weight: 600; }
 #toast { position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(16px); background: #1d2e27; color: #fff; padding: 10px 18px; border-radius: 22px; font-size: 13.5px; opacity: 0; transition: .25s; z-index: 60; pointer-events: none; max-width: 90vw; text-align: center; }
 #toast.on { opacity: 1; transform: translateX(-50%); }
+.seg { display: flex; gap: 8px; margin-bottom: 12px; }
+.seg button { flex: 1; padding: 11px 6px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 14px; font-weight: 500; }
+.seg button.on { background: var(--green); color: #fff; border-color: var(--green); }
+.rows .rw { display: flex; gap: 8px; margin-bottom: 8px; }
+.rows .rw .inp { flex: 1; min-width: 0; }
+.rm { flex: 0 0 44px; border-radius: 12px; background: var(--danger-t); color: var(--danger); display: flex; align-items: center; justify-content: center; }
+.tl { position: relative; padding-left: 22px; }
+.tl .st { position: relative; padding: 6px 0 12px; font-size: 14.5px; }
+.tl .st::before { content: ""; position: absolute; left: -22px; top: 11px; width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
+.tl .st::after { content: ""; position: absolute; left: -18px; top: 22px; bottom: -6px; width: 2px; background: var(--line); }
+.tl .st:last-child::after { display: none; }
+.tl .st.mid::before { background: #fff; border: 2px solid var(--green); }
 .loading { text-align: center; padding: 50px 10px; color: var(--muted); }
 </style>
 </head>
@@ -200,6 +212,9 @@ const ICONS = {
   zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   tool: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
   bus: '<rect x="3" y="3" width="18" height="14" rx="3"/><path d="M3 11h18M7 17v3M17 17v3"/><circle cx="7.5" cy="14" r="0.8"/><circle cx="16.5" cy="14" r="0.8"/>',
+  store: '<path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/><path d="M10 20v-5h4v5"/>',
+  locate: '<circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="8"/>',
+  route: '<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
   users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
 };
 const ic = n => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || "") + '</svg>';
@@ -222,15 +237,44 @@ function waLink(num, text) { return "https://wa.me/" + String(num).replace(/\D/g
 
 /* ================== Data ================== */
 let DATA = null;
-const DEMO_PENDING = "rb_pending", DEMO_APPROVED = "rb_approved", FAVS = "rb_favs", CITY = "rb_city";
-function allProviders() { return DATA.providers.concat(lsGet(DEMO_APPROVED, [])); }
+const K_PEND = "rb_pending", K_APP = "rb_approved", K_RT = "rb_routes", K_MINE = "rb_mine", FAVS = "rb_favs", K_LOC = "rb_loc", K_GEO = "rb_geo";
+const norm = s => String(s == null ? "" : s).trim().toLowerCase();
+const sameCity = (a, b) => { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.includes(b) || b.includes(a)); };
+const cityName = x => x || "";
+const nice = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+function allProviders() { return DATA.providers.concat(lsGet(K_APP, [])); }
+function allRoutes() { return DATA.routes.concat(lsGet(K_RT, [])); }
 function catById(id) { return DATA.categories.find(c => c.id === id); }
-function cityById(id) { return DATA.cities.find(c => c.id === id); }
-function cityName(id) { const c = cityById(id); return c ? c.name : ""; }
 function getFavs() { return lsGet(FAVS, []); }
 function isFav(id) { return getFavs().includes(id); }
 function toggleFav(id) { let f = getFavs(); f = f.includes(id) ? f.filter(x => x !== id) : f.concat(id); lsSet(FAVS, f); return f.includes(id); }
-function selCity() { return lsGet(CITY, ""); }
+function selCity() { const l = lsGet(K_LOC, null); return l ? l.name : ""; }
+function geo() { const l = lsGet(K_LOC, null); return l && l.lat != null ? l : null; }
+function isMine(id) { return lsGet(K_MINE, []).includes(id); }
+function dist(a, b) { const R = 6371, r = x => x * Math.PI / 180, dl = r(b.lat - a.lat), dn = r(b.lng - a.lng); const h = Math.sin(dl / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
+function knownCities() { const m = {}; DATA.cities.map(c => c.name).concat(allProviders().map(p => p.city)).forEach(n => { if (n && !m[norm(n)]) m[norm(n)] = n; }); return Object.values(m).sort(); }
+function fmt12(t) { const a = String(t).split(":").map(Number), h = a[0], m = a[1] || 0; return ((h + 11) % 12 + 1) + ":" + String(m).padStart(2, "0") + (h < 12 ? " AM" : " PM"); }
+
+/* ===== GPS aur jagah ka naam ===== */
+async function reverse(lat, lng) {
+  const k = lat.toFixed(2) + "," + lng.toFixed(2), c = lsGet(K_GEO, {});
+  if (c[k]) return c[k];
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&accept-language=en");
+    const a = (await r.json()).address || {};
+    const o = { city: (a.city || a.town || a.county || a.state_district || a.village || "").replace(/ (District|Tehsil|Division)$/i, ""), area: a.village || a.hamlet || a.suburb || a.neighbourhood || a.town || a.city || "" };
+    c[k] = o; lsSet(K_GEO, c); return o;
+  } catch (e) { return { city: "", area: "" }; }
+}
+function getGps(ok) {
+  if (!navigator.geolocation) { toast("Is phone mein GPS nahi"); return; }
+  if (!confirm("Aap ki jagah sirf aap ke nazdeeki log dikhane ke liye li jayegi. Theek hai?")) return;
+  toast("Jagah dhoondi ja rahi hai...");
+  navigator.geolocation.getCurrentPosition(async p => {
+    const lat = p.coords.latitude, lng = p.coords.longitude, r = await reverse(lat, lng);
+    ok({ lat, lng, city: r.city, area: r.area });
+  }, () => toast("Jagah nahi mili. Haath se shehr chunein."), { enableHighAccuracy: true, timeout: 15000 });
+}
 
 /* ================== Navigation (history + scroll bahal) ================== */
 let cur = null; // { view, params, d }
@@ -266,7 +310,7 @@ function setHeader(o) {
   $("hRight").innerHTML = o.right || "";
 }
 function updateNav() {
-  const map = { home: "home", search: "search", favs: "favs", add: "add", added: "add" };
+  const map = { home: "home", search: "search", favs: "favs", add: "add", added: "add", addroute: "add" };
   const on = map[cur.view] || "";
   const items = [["home", "home", "Home"], ["search", "search", "Dhoondein"], ["favs", "heart", "Pasandida"], ["add", "userPlus", "Add"]];
   $("nav").innerHTML = items.map(i => '<button data-n="' + i[0] + '" class="' + (on === i[0] ? "on" : "") + '">' + ic(i[1]) + "<span>" + i[2] + "</span></button>").join("");
@@ -280,15 +324,16 @@ $("nav").addEventListener("click", e => {
 });
 
 /* ================== Card ================== */
-function card(p, opts) {
-  opts = opts || {};
-  const loc = [p.area, cityName(p.city)].filter(Boolean).join(", ");
+function card(p) {
+  const loc = [p.area, p.city].filter(Boolean).join(", "), t = p.shopName || p.name;
+  const d = p._d != null ? " · " + p._d.toFixed(p._d < 10 ? 1 : 0) + " km door" : "";
   const msg = "Assalam o Alaikum, main ne aap ka number " + APP_NAME + " app se liya hai. Mujhe aap ke kaam ki zaroorat hai.";
   return '<div class="card" data-id="' + esc(p.id) + '">' +
-    '<div class="prow" data-open="' + esc(p.id) + '">' + avatar(p) +
-    '<div class="pinfo"><div class="pname">' + esc(p.name) + ic("verified") + "</div>" +
+    '<div class="prow" data-open="' + esc(p.id) + '">' + avatar({ name: t, dpB64: p.dpB64 }) +
+    '<div class="pinfo"><div class="pname">' + esc(t) + ic("verified") + "</div>" +
+    (p.shopName ? '<div class="ploc">Maalik: ' + esc(p.name) + "</div>" : "") +
     '<div class="pwork">' + esc(p.workText) + "</div>" +
-    (loc ? '<div class="ploc">' + ic("pin") + esc(loc) + "</div>" : "") + "</div>" +
+    (loc ? '<div class="ploc">' + ic("pin") + esc(loc + d) + "</div>" : "") + "</div>" +
     '<button class="fav ' + (isFav(p.id) ? "on" : "") + '" data-fav="' + esc(p.id) + '" aria-label="Pasandida">' + ic("heart") + "</button></div>" +
     '<div class="acts"><a class="btn call" href="tel:' + esc(p.phone) + '">' + ic("phone") + "Call</a>" +
     '<a class="btn wa" href="' + esc(waLink(p.whatsapp || p.phone, msg)) + '" target="_blank" rel="noopener">' + ic("chat") + "WhatsApp</a></div></div>";
@@ -311,22 +356,22 @@ function emptyBox(msg, withAdd) {
 }
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go); });
 
-/* ================== City sheet ================== */
+/* ================== Jagah chunna ================== */
+function setLoc(o) { lsSet(K_LOC, o.name ? o : null); $("ov").classList.remove("on"); show({ view: cur.view, params: cur.params, scroll: window.scrollY, d: cur.d }); }
 function openCitySheet() {
   const sel = selCity();
-  $("sheet").innerHTML = "<h2>Shehr chunein</h2>" +
-    '<div class="opt ' + (!sel ? "on" : "") + '" data-c="">Sab jagah' + (!sel ? ic("check") : "") + "</div>" +
-    DATA.cities.map(c => '<div class="opt ' + (sel === c.id ? "on" : "") + '" data-c="' + c.id + '"><span>' + esc(c.name) + " <small>" + esc(c.province) + "</small></span>" + (sel === c.id ? ic("check") : "") + "</div>").join("") +
-    '<div class="note" style="margin-top:12px">' + ic("pin") + "<span>Jald: GPS se apni jagah khud chunna.</span></div>";
+  $("sheet").innerHTML = "<h2>Aap kahan hain?</h2>" +
+    '<button class="cta green" id="gpsB">' + ic("locate") + "Meri maujooda jagah (GPS)</button>" +
+    '<div class="opt ' + (!sel ? "on" : "") + '" data-c="" style="margin-top:8px">Sab jagah' + (!sel ? ic("check") : "") + "</div>" +
+    knownCities().map(n => '<div class="opt ' + (norm(sel) === norm(n) ? "on" : "") + '" data-c="' + esc(n) + '"><span>' + esc(n) + "</span>" + (norm(sel) === norm(n) ? ic("check") : "") + "</div>").join("") +
+    '<div class="fld" style="margin-top:14px"><label>Doosra shehr ya gaon likhein</label><div class="phrow"><input class="inp" id="oc" maxlength="40" placeholder="Jagah ka naam"><button class="btn ok" id="ocB" style="flex:0 0 auto;padding:0 18px">Chunein</button></div></div>';
   $("ov").classList.add("on");
-  $("sheet").querySelectorAll("[data-c]").forEach(o => o.onclick = () => {
-    lsSet(CITY, o.dataset.c);
-    $("ov").classList.remove("on");
-    show({ view: cur.view, params: cur.params, scroll: window.scrollY, d: cur.d });
-  });
+  $("sheet").querySelectorAll("[data-c]").forEach(o => o.onclick = () => setLoc({ name: o.dataset.c }));
+  $("ocB").onclick = () => { const v = nice($("oc").value); if (v.length < 2) { toast("Jagah ka naam likhein"); return; } setLoc({ name: v }); };
+  $("gpsB").onclick = () => getGps(r => { const n = r.city || r.area; if (!n) { toast("Naam nahi mila, haath se likhein"); return; } setLoc({ name: n, lat: r.lat, lng: r.lng }); toast("Aap ki jagah: " + n); });
 }
 $("ov").addEventListener("click", e => { if (e.target === $("ov")) $("ov").classList.remove("on"); });
-function cityPill() { const n = selCity() ? cityName(selCity()) : "Sab jagah"; return '<button class="cpill" id="cityBtn">' + ic("pin") + "<span>" + esc(n) + "</span></button>"; }
+function cityPill() { const n = selCity() ? selCity() : "Sab jagah"; return '<button class="cpill" id="cityBtn">' + ic(geo() ? "locate" : "pin") + "<span>" + esc(n) + "</span></button>"; }
 function bindCityBtn() { const b = $("cityBtn"); if (b) b.onclick = openCitySheet; }
 
 /* ================== Views ================== */
@@ -335,10 +380,9 @@ VIEWS.home = function () {
   $("app").innerHTML =
     '<div class="sbox fake" id="fakeSearch">' + ic("search") + "<span>Naam ya kaam talash karein</span></div>" +
     '<div class="h2" style="margin-top:6px">Kya chahiye?</div>' +
-    '<div class="grid">' + DATA.categories.map(c => '<button class="cat" data-cat="' + c.id + '"><div class="ci">' + ic(c.icon) + "</div>" + esc(c.name) + "</button>").join("") + "</div>" +
-    '<div class="note">' + ic("shield") + "<span>Sirf manzoor shuda logon ke naam nazar aate hain. Abhi namoona data hai, asli log jald joday jayenge.</span></div>" +
-    '<button class="cta" data-go="add">' + ic("userPlus") + "Apni detail add karein</button>" +
-    '<button class="link" data-go="admin">Admin (demo)</button>';
+    '<div class="grid" style="grid-template-columns:repeat(' + (DATA.categories.length % 4 === 0 ? 4 : DATA.categories.length % 3 === 0 ? 3 : 4) + ',minmax(0,1fr))">' + DATA.categories.map(c => '<button class="cat" data-cat="' + c.id + '"><div class="ci">' + ic(c.icon) + "</div>" + esc(c.name) + "</button>").join("") + "</div>" +
+    '<div class="note">' + ic("shield") + "<span>Sirf manzoor shuda logon ke naam nazar aate hain. Abhi app naya hai. Sab se pehle aap apni detail add karein.</span></div>" +
+    '<button class="cta" data-go="add">' + ic("userPlus") + "Apni detail add karein</button>";
   bindCityBtn();
   $("fakeSearch").onclick = () => go("search", { focus: true });
   document.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => {
@@ -348,15 +392,17 @@ VIEWS.home = function () {
 };
 
 function filterProviders(cat, q, tag) {
-  const city = selCity();
-  q = (q || "").trim().toLowerCase();
-  return allProviders().filter(p =>
-    (!cat || p.categoryId === cat) && (!city || p.city === city) && (!tag || p.tag === tag) &&
-    (!q || (p.name + " " + p.workText + " " + p.area + " " + (p.tag || "") + " " + cityName(p.city)).toLowerCase().includes(q)));
+  const city = selCity(), g = geo();
+  q = norm(q);
+  let r = allProviders().filter(p => (!cat || p.categoryId === cat) && (!tag || p.tag === tag) &&
+    (!q || norm([p.name, p.shopName, p.workText, p.area, p.tag, p.city].join(" ")).includes(q)));
+  if (city) r = r.filter(p => sameCity(p.city, city) || (g && p.lat != null && dist(g, p) <= 50));
+  if (g) { r = r.map(p => Object.assign({}, p, { _d: p.lat != null ? dist(g, p) : null })); r.sort((a, b) => (a._d == null) - (b._d == null) || a._d - b._d); }
+  return r;
 }
 VIEWS.list = function (p) {
   const cat = catById(p.cat);
-  const tags = [...new Set(allProviders().filter(x => x.categoryId === p.cat && (!selCity() || x.city === selCity())).map(x => x.tag).filter(Boolean))];
+  const tags = [...new Set(allProviders().filter(x => x.categoryId === p.cat && (!selCity() || sameCity(x.city, selCity()))).map(x => x.tag).filter(Boolean))];
   setHeader({ title: cat.name, sub: selCity() ? cityName(selCity()) + " mein" : "Sab jagah", right: cityPill() });
   $("app").innerHTML =
     '<div class="sbox">' + ic("search") + '<input id="lq" type="search" placeholder="Is category mein talash karein" value="' + esc(p.q || "") + '"><button class="clr ' + (p.q ? "show" : "") + '" id="lclr" aria-label="Saaf">' + ic("x") + "</button></div>" +
@@ -416,14 +462,14 @@ VIEWS.favs = function () {
 VIEWS.detail = function (p) {
   const x = allProviders().find(y => y.id === p.id);
   if (!x) { setHeader({ title: "Nahi mila" }); $("app").innerHTML = emptyBox("Ye record ab maujood nahi.", false); return; }
-  const cat = catById(x.categoryId);
-  const loc = [x.area, cityName(x.city)].filter(Boolean).join(", ");
+  const cat = catById(x.categoryId), t = x.shopName || x.name, loc = [x.area, x.city].filter(Boolean).join(", ");
   const msg = "Assalam o Alaikum, main ne aap ka number " + APP_NAME + " app se liya hai. Mujhe aap ke kaam ki zaroorat hai.";
-  setHeader({ title: x.name, sub: cat ? cat.name : "" });
+  const waitEdit = isMine(x.id) && lsGet(K_PEND, []).some(r => r.editOf === x.id);
+  setHeader({ title: t, sub: cat ? cat.name : "" });
   $("app").innerHTML =
-    '<div class="card" style="text-align:center;padding:20px 14px">' +
-    '<div style="display:flex;justify-content:center;margin-bottom:10px">' + avatar(x, true) + "</div>" +
-    '<div class="pname" style="justify-content:center;font-size:19px">' + esc(x.name) + ic("verified") + "</div>" +
+    '<div class="card" style="text-align:center;padding:20px 14px"><div style="display:flex;justify-content:center;margin-bottom:10px">' + avatar({ name: t, dpB64: x.dpB64 }, true) + "</div>" +
+    '<div class="pname" style="justify-content:center;font-size:19px">' + esc(t) + ic("verified") + "</div>" +
+    (x.shopName ? '<div class="ploc" style="justify-content:center">Maalik: ' + esc(x.name) + "</div>" : "") +
     (x.tag ? '<span class="tag">' + esc(x.tag) + "</span>" : "") +
     '<div style="margin-top:10px;color:var(--muted);font-size:14px">' + esc(x.workText) + "</div>" +
     (loc ? '<div class="ploc" style="justify-content:center;margin-top:8px">' + ic("pin") + esc(loc) + "</div>" : "") +
@@ -432,31 +478,41 @@ VIEWS.detail = function (p) {
     (x.workPhotoB64 ? '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + x.workPhotoB64 + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>' : "") +
     '<div class="card"><div class="kv"><span>Phone</span><span>' + esc(x.phone) + "</span></div>" +
     '<div class="kv"><span>Category</span><span>' + esc(cat ? cat.name : "") + "</span></div>" +
-    '<div class="kv"><span>Shehr</span><span>' + esc(cityName(x.city)) + "</span></div></div>" +
-    '<div class="acts" style="margin-top:0">' +
-    '<button class="btn ghost" id="dFav">' + ic("heart") + (isFav(x.id) ? "Pasandida hai" : "Pasandida") + "</button>" +
+    '<div class="kv"><span>Shehr</span><span>' + esc(x.city) + "</span></div></div>" +
+    (isMine(x.id) ? (waitEdit ? '<div class="note">' + ic("clock") + "<span>Aap ki tabdeeli manzoori ke intezar mein hai. Tab tak purana data nazar aaye ga.</span></div>" : "") + '<button class="cta green" id="dEdit">' + ic("pencil") + "Apni detail tabdeel karein</button>" : "") +
+    '<div class="acts" style="margin-top:0"><button class="btn ghost" id="dFav">' + ic("heart") + (isFav(x.id) ? "Pasandida hai" : "Pasandida") + "</button>" +
     '<button class="btn ghost" id="dShare">' + ic("share") + "Share</button></div>" +
     '<button class="link" id="dReport">' + ic("flag").replace("<svg", '<svg style="width:15px;height:15px;vertical-align:-3px"') + " Ghalat maloomat batayein</button>";
+  if ($("dEdit")) $("dEdit").onclick = () => go("add", { edit: x.id });
   $("dFav").onclick = () => { const on = toggleFav(x.id); toast(on ? "Pasandida mein jod diya" : "Pasandida se hata diya"); VIEWS.detail(p); };
-  $("dShare").onclick = () => {
-    const t = x.name + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME;
-    if (navigator.share) navigator.share({ text: t }).catch(() => {});
-    else if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => toast("Copy ho gaya"));
-  };
+  $("dShare").onclick = () => { const s = t + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME; if (navigator.share) navigator.share({ text: s }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast("Copy ho gaya")); };
   $("dReport").onclick = () => toast("Shukriya. (Demo: asli app mein ye admin ko jayega)");
 };
 
 VIEWS.routes = function (p) {
-  setHeader({ title: "Safar ke waqt", sub: "Gariyon ke waqt" });
-  const rid = p.rid || DATA.routes[0].id;
-  const r = DATA.routes.find(x => x.id === rid) || DATA.routes[0];
-  $("app").innerHTML =
-    '<div class="chips">' + DATA.routes.map(x => '<button class="chip ' + (x.id === r.id ? "on" : "") + '" data-r="' + x.id + '">' + esc(x.from) + " se " + esc(x.to) + "</button>").join("") + "</div>" +
-    '<div class="card" style="padding:4px 14px"><table class="tt">' + r.times.map(t => "<tr><td>" + esc(t.v) + "</td><td>" + esc(t.t) + "</td></tr>").join("") + "</table></div>" +
-    '<div class="note">' + ic("clock") + "<span>Aakhri update: " + esc(r.updatedAt) + ". Namoona waqt hain. Waqt mein farq ho to driver se pooch lein.</span></div>" +
+  setHeader({ title: "Safar ke waqt", sub: "Gariyon ka rasta aur waqt" });
+  $("app").innerHTML = '<div class="sbox">' + ic("search") + '<input id="rq" type="search" placeholder="Jagah ka naam (maslan Dina)" value="' + esc(p.q || "") + '"></div>' +
+    '<div id="rres" style="display:flex;flex-direction:column;gap:10px"></div><button class="cta" data-go="addroute">' + ic("route") + "Safar add karein</button>";
+  function draw() {
+    const q = norm(p.q), l = allRoutes().filter(r => !q || norm([r.from, r.to, (r.stops || []).join(" "), r.vehicle].join(" ")).includes(q));
+    $("rres").innerHTML = l.length ? l.map(r => '<div class="card" data-rid="' + esc(r.id) + '" style="cursor:pointer"><div class="pname">' + esc(r.from) + " &rarr; " + esc(r.to) + '</div>' +
+      '<div class="pwork">' + (r.stops && r.stops.length ? "Darmiyan: " + esc(r.stops.join(", ")) : "Seedhi gari") + "</div>" +
+      '<span class="tag">' + esc(r.vehicle) + '</span> <span class="tag">' + r.times.length + " waqt</span></div>").join("") : emptyBox("Abhi koi safar nahi.<br>Neeche se pehla safar add karein.", false);
+    $("rres").querySelectorAll("[data-rid]").forEach(c => c.onclick = () => go("route", { id: c.dataset.rid }));
+  }
+  draw();
+  $("rq").oninput = e => { p.q = e.target.value; saveParams({ q: p.q }); draw(); };
+};
+VIEWS.route = function (p) {
+  const r = allRoutes().find(x => x.id === p.id);
+  if (!r) { setHeader({ title: "Nahi mila" }); $("app").innerHTML = emptyBox("Ye safar ab maujood nahi.", false); return; }
+  setHeader({ title: r.from + " se " + r.to, sub: r.vehicle });
+  const pts = [r.from].concat(r.stops || [], [r.to]);
+  $("app").innerHTML = '<div class="card"><div class="h2" style="margin:0 0 8px">Rasta</div><div class="tl">' + pts.map((x, i) => '<div class="st ' + (i && i < pts.length - 1 ? "mid" : "") + '">' + esc(x) + (i === 0 ? " <small style='color:var(--muted)'>(yahan se chalti hai)</small>" : "") + "</div>").join("") + "</div></div>" +
+    '<div class="card" style="padding:4px 14px"><div class="h2" style="margin:10px 0 0">' + esc(r.from) + " se chalne ka waqt</div><table class=\"tt\">" + r.times.slice().sort().map(t => "<tr><td>" + esc(r.vehicle) + "</td><td>" + fmt12(t) + "</td></tr>").join("") + "</table></div>" +
+    '<div class="note">' + ic("clock") + "<span>Aakhri update: " + esc((r.updatedAt || "").slice(0, 10)) + ". Waqt mein farq ho to driver se pooch lein.</span></div>" +
     '<div class="acts" style="margin-top:0"><a class="btn call" href="tel:' + esc(r.phone) + '">' + ic("phone") + "Driver ko call</a>" +
-    '<a class="btn wa" href="' + esc(waLink(r.whatsapp, "Assalam o Alaikum, " + r.from + " se " + r.to + " ke waqt ke baare mein poochna tha.")) + '" target="_blank" rel="noopener">' + ic("chat") + "WhatsApp</a></div>";
-  document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { saveParams({ rid: b.dataset.r }); VIEWS.routes(cur.params); });
+    '<a class="btn wa" href="' + esc(waLink(r.whatsapp || r.phone, "Assalam o Alaikum, " + r.from + " se " + r.to + " ke waqt ke baare mein poochna tha.")) + '" target="_blank" rel="noopener">' + ic("chat") + "WhatsApp</a></div>";
 };
 
 VIEWS.numbers = function () {
@@ -500,58 +556,115 @@ function normPhone(cc, raw) {
   return { digits: d, full: cc + d };
 }
 function phoneOk(cc, d) { return cc === "+92" ? /^3\d{9}$/.test(d) : /^\d{7,12}$/.test(d); }
-VIEWS.add = function () {
-  setHeader({ title: "Apni detail add karein", sub: "Aap ki detail pehle jaanchi jayegi" });
-  const peopleCats = DATA.categories.filter(c => c.type === "people");
-  $("app").innerHTML =
-    '<div class="card">' +
-    '<div class="pics"><div class="pic" id="picDp">' + ic("camera") + '<span>Apni tasveer (DP)</span><input type="file" accept="image/*" id="fDp"></div>' +
-    '<div class="pic" id="picWork">' + ic("image") + '<span>Kaam ki tasveer</span><input type="file" accept="image/*" id="fWork"></div></div>' +
-    '<div class="fld"><label for="fName">Naam</label><input class="inp" id="fName" maxlength="60" placeholder="Poora naam"><div class="ferr" id="eName">Naam likhna zaroori hai (kam az kam 2 harf).</div></div>' +
-    '<div class="fld"><label for="fCat">Kaam ki category</label><select class="inp" id="fCat"><option value="">Chunein</option>' + peopleCats.map(c => '<option value="' + c.id + '">' + esc(c.name) + "</option>").join("") + '</select><div class="ferr" id="eCat">Category chunein.</div></div>' +
-    '<div class="fld"><label for="fWork2">Kaam ki tafseel</label><input class="inp" id="fWork2" maxlength="140" placeholder="Jaise: Raj mistri, 15 saal ka tajurba"><div class="ferr" id="eWork">Kaam ki tafseel likhein.</div></div>' +
-    '<div class="fld"><label>Phone number</label><div class="phrow"><select class="inp" id="fCc">' + COUNTRIES.map(c => '<option value="' + c[0] + '">' + c[0] + " " + c[1] + "</option>").join("") + '</select><input class="inp" id="fPhone" type="tel" inputmode="tel" placeholder="3xx xxxxxxx"></div><div class="ferr" id="ePhone">Sahi number likhein. Pakistan ke liye 10 ankon ka mobile number (maslan 3001234567).</div></div>' +
-    '<div class="fld"><label for="fWa">WhatsApp number (agar alag ho)</label><input class="inp" id="fWa" type="tel" inputmode="tel" placeholder="Khali chorein to wohi number"><div class="ferr" id="eWa">WhatsApp number theek nahi.</div></div>' +
-    '<div class="fld"><label for="fCity">Shehr</label><select class="inp" id="fCity"><option value="">Chunein</option>' + DATA.cities.map(c => '<option value="' + c.id + '">' + esc(c.name) + "</option>").join("") + '</select><div class="ferr" id="eCity">Shehr chunein.</div></div>' +
-    '<div class="fld"><label for="fArea">Gaon / mohalla</label><input class="inp" id="fArea" maxlength="60" placeholder="Gaon ka naam"><div class="ferr" id="eArea">Gaon ya mohalla likhein.</div></div>' +
-    '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke mera naam, number aur tasveer sab ko nazar aaye.</span></label><div class="ferr" id="eConsent" style="margin:-8px 0 10px">Ijazat zaroori hai.</div>' +
-    '<button class="cta green" id="fSubmit">Bhejein</button></div>' +
+const fld = (id, l, ph, t) => '<div class="fld"><label for="' + id + '">' + l + '</label><input class="inp" id="' + id + '" ' + (t ? 'type="' + t + '" ' : "") + 'maxlength="80" placeholder="' + ph + '"><div class="ferr" id="e_' + id + '"></div></div>';
+const addTabs = a => '<div class="seg"><button class="' + (a === "p" ? "on" : "") + '" data-go="add">Apni detail / dukan</button><button class="' + (a === "r" ? "on" : "") + '" data-go="addroute">Gari ka safar</button></div>';
+function bad(id, msg, cond) { const e = $(id); if (!e) return cond; e.classList.toggle("err", cond); const m = $("e_" + id); if (m) { m.textContent = msg; m.classList.toggle("show", cond); } return cond; }
+function clearErr(root) { root.querySelectorAll(".inp,.sel").forEach(i => { const h = () => { i.classList.remove("err"); const m = $("e_" + i.id); if (m) m.classList.remove("show"); }; i.addEventListener("input", h); i.addEventListener("change", h); }); }
+function phoneBox(v) {
+  const cc0 = COUNTRIES.find(c => (v.phone || "").startsWith(c[0])) || COUNTRIES[0];
+  return { cc0, html: '<div class="fld"><label>Phone number</label><div class="phrow"><select class="inp" id="fCc">' + COUNTRIES.map(c => '<option value="' + c[0] + '"' + (c === cc0 ? " selected" : "") + ">" + c[0] + " " + c[1] + "</option>").join("") + '</select><input class="inp" id="fPhone" type="tel" inputmode="tel" placeholder="3xx xxxxxxx" value="' + esc((v.phone || "").slice(cc0[0].length)) + '"></div><div class="ferr" id="e_fPhone"></div></div>' +
+    '<div class="fld"><label for="fWa">WhatsApp number (agar alag ho)</label><input class="inp" id="fWa" type="tel" inputmode="tel" placeholder="Khali chorein to wohi number" value="' + esc(v.whatsapp && v.whatsapp !== v.phone ? v.whatsapp.slice(cc0[0].length) : "") + '"><div class="ferr" id="e_fWa"></div></div>' };
+}
+function readPhones() {
+  const cc = $("fCc").value, ph = normPhone(cc, $("fPhone").value), w = $("fWa").value.trim(), wa = w ? normPhone(cc, w) : null;
+  const e1 = bad("fPhone", "Sahi number likhein. Pakistan ke liye 10 ankon ka mobile (maslan 3001234567).", !phoneOk(cc, ph.digits));
+  const e2 = bad("fWa", "WhatsApp number theek nahi.", !!wa && !phoneOk(cc, wa.digits));
+  return { err: e1 || e2, phone: ph.full, whatsapp: wa ? wa.full : ph.full };
+}
+function saveRec(key, rec, mineId) {
+  const l = lsGet(key, []).filter(r => !(rec.editOf && r.editOf === rec.editOf)); l.push(rec);
+  if (!lsSet(key, l)) { toast("Jagah kam hai, tasveer chhoti ya hata dein"); return false; }
+  if (mineId) { const m = lsGet(K_MINE, []); if (!m.includes(mineId)) { m.push(mineId); lsSet(K_MINE, m); } }
+  return true;
+}
+function dynRows(boxId, type, ph, vals) {
+  const box = $(boxId);
+  const add = v => { const d = document.createElement("div"); d.className = "rw"; d.innerHTML = '<input class="inp" type="' + type + '" ' + (type === "text" ? 'maxlength="40" placeholder="' + ph + '"' : "") + ' value="' + esc(v || "") + '"><button type="button" class="rm" aria-label="Hatayein">' + ic("x") + "</button>"; d.querySelector(".rm").onclick = () => d.remove(); box.appendChild(d); };
+  (vals && vals.length ? vals : [""]).forEach(add);
+  return { add: () => add(""), vals: () => Array.from(box.querySelectorAll("input")).map(i => i.value.trim()).filter(Boolean) };
+}
+
+VIEWS.add = function (p) {
+  const e = p.edit ? allProviders().find(x => x.id === p.edit) : null, v = e || {};
+  let kind = v.kind === "shop" ? "shop" : "work", pos = v.lat != null ? { lat: v.lat, lng: v.lng } : null;
+  setHeader({ title: e ? "Detail tabdeel karein" : "Apni detail add karein", sub: e ? "Manzoori tak purana data nazar aaye ga" : "Aap ki detail pehle jaanchi jayegi" });
+  const cats = DATA.categories.filter(c => c.type === "people" && c.id !== "dukan"), cl = knownCities();
+  const inList = v.city && cl.some(n => norm(n) === norm(v.city)), ph = phoneBox(v);
+  $("app").innerHTML = (e ? "" : addTabs("p")) + '<div class="card">' +
+    '<div class="pics"><div class="pic" id="picDp">' + (v.dpB64 ? '<img alt="" src="' + v.dpB64 + '">' : "") + ic("camera") + '<span>Apni tasveer (DP)</span><input type="file" accept="image/*" id="fDp"></div>' +
+    '<div class="pic" id="picWork">' + (v.workPhotoB64 ? '<img alt="" src="' + v.workPhotoB64 + '">' : "") + ic("image") + '<span>Kaam / dukan ki tasveer</span><input type="file" accept="image/*" id="fWork"></div></div>' +
+    '<div class="seg" id="kseg"><button type="button" data-k="work">Main kaam karta hoon</button><button type="button" data-k="shop">Meri dukan hai</button></div>' +
+    '<div id="shopBox">' + fld("fShop", "Dukan ka naam", "Dukan ka naam likhein") + fld("fTag", "Dukan ki qisam", "Jaise: Kiryana, Mobile, Dawai") + "</div>" +
+    fld("fName", "Aap ka naam", "Poora naam") +
+    '<div class="fld" id="catBox"><label for="fCat">Kaam ki category</label><select class="inp" id="fCat"><option value="">Chunein</option>' + cats.map(c => '<option value="' + c.id + '"' + (v.categoryId === c.id ? " selected" : "") + ">" + esc(c.name) + "</option>").join("") + '</select><div class="ferr" id="e_fCat"></div></div>' +
+    fld("fWork2", "Kaam / dukan ki tafseel", "Jaise: Raj mistri, 15 saal ka tajurba") + ph.html +
+    '<div class="fld"><label for="fCity">Shehr</label><select class="inp" id="fCity"><option value="">Chunein</option>' + cl.map(n => '<option value="' + esc(n) + '"' + (inList && norm(v.city) === norm(n) ? " selected" : "") + ">" + esc(n) + "</option>").join("") + '<option value="__o"' + (v.city && !inList ? " selected" : "") + '>Doosra (khud likhein)</option></select><div class="ferr" id="e_fCity"></div></div>' +
+    '<div id="ocBox" style="display:' + (v.city && !inList ? "block" : "none") + '">' + fld("fCity2", "Apne shehr ka naam", "Shehr likhein") + "</div>" +
+    fld("fArea", "Gaon / mohalla", "Gaon ka naam") +
+    '<button type="button" class="btn ghost" id="fGps" style="width:100%;margin-bottom:14px">' + ic("locate") + "Meri jagah khud bharein (GPS)</button>" +
+    '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke mera naam, number aur tasveer sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
+    '<button class="cta green" id="fSubmit">' + (e ? "Tabdeeli bhejein" : "Bhejein") + "</button></div>" +
     '<div class="note">' + ic("lock") + "<span>Demo: abhi ye maloomat sirf aap ke phone mein rehti hain. Asli app mein ye admin ke paas jayegi.</span></div>";
-  const photos = { dp: "", work: "" };
+  $("fName").value = v.name || ""; $("fWork2").value = v.workText || ""; $("fArea").value = v.area || ""; $("fShop").value = v.shopName || ""; $("fTag").value = v.kind === "shop" ? (v.tag || "") : ""; if (v.city && !inList) $("fCity2").value = v.city;
+  function setKind(k) { kind = k; $("shopBox").style.display = k === "shop" ? "block" : "none"; $("catBox").style.display = k === "shop" ? "none" : "block"; document.querySelectorAll("#kseg button").forEach(b => b.classList.toggle("on", b.dataset.k === k)); }
+  setKind(kind); document.querySelectorAll("#kseg button").forEach(b => b.onclick = () => setKind(b.dataset.k));
+  $("fCity").onchange = () => { $("ocBox").style.display = $("fCity").value === "__o" ? "block" : "none"; };
+  $("fGps").onclick = () => getGps(r => { pos = { lat: Math.round(r.lat * 100) / 100, lng: Math.round(r.lng * 100) / 100 }; if (r.city) { const o = Array.from($("fCity").options).find(x => norm(x.value) === norm(r.city)); if (o) $("fCity").value = o.value; else { $("fCity").value = "__o"; $("ocBox").style.display = "block"; $("fCity2").value = r.city; } } if (r.area) $("fArea").value = r.area; toast("Jagah bhar di gayi, check kar lein"); });
+  const photos = { dp: v.dpB64 || "", work: v.workPhotoB64 || "" };
   function bindPic(inputId, boxId, key, side) {
-    $(inputId).onchange = async e => {
-      const f = e.target.files && e.target.files[0]; if (!f) return;
-      try {
-        photos[key] = await compressImage(f, side, 0.72);
-        const box = $(boxId); const old = box.querySelector("img"); if (old) old.remove();
-        const im = document.createElement("img"); im.src = photos[key]; im.alt = ""; box.appendChild(im);
-      } catch (err) { toast("Tasveer nahi khuli, doosri chunein"); }
+    $(inputId).onchange = async ev => {
+      const f = ev.target.files && ev.target.files[0]; if (!f) return;
+      try { photos[key] = await compressImage(f, side, 0.72); const box = $(boxId), old = box.querySelector("img"); if (old) old.remove(); const im = document.createElement("img"); im.src = photos[key]; im.alt = ""; box.appendChild(im); }
+      catch (err) { toast("Tasveer nahi khuli, doosri chunein"); }
     };
   }
   bindPic("fDp", "picDp", "dp", 256); bindPic("fWork", "picWork", "work", 640);
-  [["fName", "eName"], ["fCat", "eCat"], ["fWork2", "eWork"], ["fPhone", "ePhone"], ["fWa", "eWa"], ["fCity", "eCity"], ["fArea", "eArea"]].forEach(a => {
-    const clear = () => { $(a[0]).classList.remove("err"); $(a[1]).classList.remove("show"); };
-    $(a[0]).addEventListener("input", clear); $(a[0]).addEventListener("change", clear);
-  });
-  $("fConsent").addEventListener("change", () => $("eConsent").classList.remove("show"));
-  const bad = (id, eid, cond) => { $(id).classList.toggle("err", cond); $(eid).classList.toggle("show", cond); return cond; };
+  clearErr($("app")); $("fConsent").onchange = () => $("e_fConsent").classList.remove("show");
   $("fSubmit").onclick = () => {
-    const name = $("fName").value.trim(), cat = $("fCat").value, work = $("fWork2").value.trim();
-    const cc = $("fCc").value, ph = normPhone(cc, $("fPhone").value), waRaw = $("fWa").value.trim();
-    const wa = waRaw ? normPhone(cc, waRaw) : null, city = $("fCity").value, area = $("fArea").value.trim();
-    let hasErr = false;
-    hasErr = bad("fName", "eName", name.length < 2) || hasErr;
-    hasErr = bad("fCat", "eCat", !cat) || hasErr;
-    hasErr = bad("fWork2", "eWork", work.length < 3) || hasErr;
-    hasErr = bad("fPhone", "ePhone", !phoneOk(cc, ph.digits)) || hasErr;
-    hasErr = bad("fWa", "eWa", !!wa && !phoneOk(cc, wa.digits)) || hasErr;
-    hasErr = bad("fCity", "eCity", !city) || hasErr;
-    hasErr = bad("fArea", "eArea", area.length < 2) || hasErr;
-    const consent = $("fConsent").checked; $("eConsent").classList.toggle("show", !consent); hasErr = !consent || hasErr;
-    if (hasErr) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, #eConsent.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
-    const rec = { id: "p" + Date.now(), name, categoryId: cat, tag: catById(cat).name, workText: work, phone: ph.full, whatsapp: wa ? wa.full : ph.full, city, area, dpB64: photos.dp, workPhotoB64: photos.work, consent: true, createdAt: new Date().toISOString() };
-    const list = lsGet(DEMO_PENDING, []); list.push(rec);
-    if (!lsSet(DEMO_PENDING, list)) { toast("Jagah kam hai, tasveer chhoti ya hata dein"); return; }
+    const shop = kind === "shop", name = $("fName").value.trim(), sn = $("fShop").value.trim(), tg = $("fTag").value.trim(), cat = $("fCat").value, work = $("fWork2").value.trim(), area = $("fArea").value.trim();
+    const cv = $("fCity").value, city = cv === "__o" ? nice($("fCity2").value) : cv, pn = readPhones();
+    let er = pn.err;
+    er = bad("fName", "Naam likhna zaroori hai.", name.length < 2) || er;
+    if (shop) { er = bad("fShop", "Dukan ka naam likhein.", sn.length < 2) || er; er = bad("fTag", "Dukan ki qisam likhein.", tg.length < 2) || er; } else er = bad("fCat", "Category chunein.", !cat) || er;
+    er = bad("fWork2", "Tafseel likhein.", work.length < 3) || er;
+    er = bad("fCity", "Shehr chunein.", !cv) || er;
+    if (cv === "__o") er = bad("fCity2", "Shehr ka naam likhein.", city.length < 2) || er;
+    er = bad("fArea", "Gaon ya mohalla likhein.", area.length < 2) || er;
+    const ok = $("fConsent").checked; $("e_fConsent").textContent = "Ijazat zaroori hai."; $("e_fConsent").classList.toggle("show", !ok); er = !ok || er;
+    if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, #e_fConsent.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
+    const rec = { id: (e ? "e" : "p") + Date.now(), kind, shopName: shop ? sn : "", name, categoryId: shop ? "dukan" : cat, tag: shop ? tg : catById(cat).name, workText: work, phone: pn.phone, whatsapp: pn.whatsapp, city, area, lat: pos ? pos.lat : null, lng: pos ? pos.lng : null, dpB64: photos.dp, workPhotoB64: photos.work, consent: true, createdAt: new Date().toISOString() };
+    if (e) rec.editOf = e.id;
+    if (!saveRec(K_PEND, rec, e ? null : rec.id)) return;
+    go("added", {}, { replace: true });
+  };
+};
+
+VIEWS.addroute = function () {
+  setHeader({ title: "Safar add karein", sub: "Gari ka rasta aur waqt" });
+  let veh = "Bus";
+  $("app").innerHTML = addTabs("r") + '<div class="card">' + fld("rFrom", "Gari kahan se chalti hai?", "Maslan: Dina") +
+    '<div class="fld"><label>Darmiyan ke stop (agar hon)</label><div class="rows" id="stopBox"></div><button type="button" class="btn ghost" id="stopAdd" style="width:100%">+ Stop jodein</button></div>' +
+    fld("rTo", "Aakhri stop", "Maslan: Jhelum") +
+    '<div class="fld"><label>Gari ki qisam</label><div class="seg" id="vseg">' + ["Bus", "Car", "Hiace", "Van"].map(x => '<button type="button" data-v="' + x + '">' + x + "</button>").join("") + "</div></div>" +
+    '<div class="fld"><label>Chalne ka waqt (pehle stop se)</label><div class="rows" id="timeBox"></div><button type="button" class="btn ghost" id="timeAdd" style="width:100%">+ Waqt jodein</button><div class="ferr" id="e_timeBox"></div></div>' +
+    phoneBox({}).html + '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke ye number aur safar sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
+    '<button class="cta green" id="rSubmit">Bhejein</button></div>' +
+    '<div class="note">' + ic("lock") + "<span>Demo: abhi ye sirf aap ke phone mein rehta hai. Asli app mein admin jaanch kar ke dikhaye ga.</span></div>";
+  const stops = dynRows("stopBox", "text", "Stop ka naam", []), times = dynRows("timeBox", "time", "", []);
+  $("stopAdd").onclick = stops.add; $("timeAdd").onclick = times.add;
+  const sv = b => { veh = b; document.querySelectorAll("#vseg button").forEach(x => x.classList.toggle("on", x.dataset.v === b)); };
+  sv(veh); document.querySelectorAll("#vseg button").forEach(b => b.onclick = () => sv(b.dataset.v));
+  clearErr($("app")); $("fConsent").onchange = () => $("e_fConsent").classList.remove("show");
+  $("rSubmit").onclick = () => {
+    const from = nice($("rFrom").value), to = nice($("rTo").value), st = stops.vals().map(nice), tm = Array.from(new Set(times.vals())), pn = readPhones();
+    let er = pn.err;
+    er = bad("rFrom", "Jahan se gari chalti hai wo likhein.", from.length < 2) || er;
+    er = bad("rTo", "Aakhri stop likhein.", to.length < 2) || er;
+    const noT = tm.length === 0; $("e_timeBox").textContent = "Kam az kam ek waqt jodein."; $("e_timeBox").classList.toggle("show", noT); er = noT || er;
+    const ok = $("fConsent").checked; $("e_fConsent").textContent = "Ijazat zaroori hai."; $("e_fConsent").classList.toggle("show", !ok); er = !ok || er;
+    if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, .ferr.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
+    const rec = { id: "r" + Date.now(), rt: "route", from, to, stops: st, vehicle: veh, times: tm, phone: pn.phone, whatsapp: pn.whatsapp, consent: true, updatedAt: new Date().toISOString() };
+    if (!saveRec(K_PEND, rec, rec.id)) return;
     go("added", {}, { replace: true });
   };
 };
@@ -561,37 +674,36 @@ VIEWS.added = function () {
     '<button class="cta green" data-go="home">Home par jayein</button></div>';
 };
 
-/* ================== Admin (DEMO, login ke baghair) ================== */
+/* ================== Admin (DEMO: sirf maalik, link home par nahi) ================== */
 VIEWS.admin = function (p) {
-  const tab = p.tab || "pending";
-  const pend = lsGet(DEMO_PENDING, []), appr = lsGet(DEMO_APPROVED, []);
+  const tab = p.tab || "pending", pend = lsGet(K_PEND, []), appr = lsGet(K_APP, []), rts = lsGet(K_RT, []);
   setHeader({ title: "Admin (demo)", sub: "Asli app mein sirf login ke baad", right: '<div class="hbtn">' + ic("lock") + "</div>" });
-  const list = tab === "pending" ? pend : appr;
-  $("app").innerHTML =
-    '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + appr.length + ")</button></div>" +
-    (list.length ? list.map(x =>
-      '<div class="card"><div class="prow" style="cursor:default">' + avatar(x) + '<div class="pinfo"><div class="pname">' + esc(x.name) + (tab === "pending" ? ' <span class="bdg">Naya</span>' : "") + "</div>" +
-      '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + "</div>" +
-      '<div class="ploc">' + ic("pin") + esc(x.area + ", " + cityName(x.city)) + "</div></div></div>" +
-      (x.workPhotoB64 ? '<img alt="" src="' + x.workPhotoB64 + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "") +
-      (tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button><button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + 'Tabdeel</button><button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
-        : '<div class="acts"><button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>") + "</div>").join("")
-      : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi.<br>Pehle 'Apni detail add karein' se ek bhej kar dekhein." : "Abhi koi manzoor shuda nahi.", false));
+  const list = tab === "pending" ? pend : appr.concat(rts);
+  const row = x => x.rt === "route" ?
+    '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + "</div>" :
+    '<div class="card"><div class="prow" style="cursor:default">' + avatar({ name: x.shopName || x.name, dpB64: x.dpB64 }) + '<div class="pinfo"><div class="pname">' + esc(x.shopName || x.name) + (tab === "pending" ? (x.editOf ? ' <span class="bdg">Tabdeeli</span>' : ' <span class="bdg">Naya</span>') : "") + "</div>" +
+    (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
+    (x.workPhotoB64 ? '<img alt="" src="' + x.workPhotoB64 + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
+  const acts = x => tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button>' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
+    : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
+  $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button></div>" +
+    (list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { saveParams({ tab: b.dataset.tab }); VIEWS.admin(cur.params); });
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
-    const id = b.dataset.id, a = b.dataset.a;
-    if (a === "ok") { const rec = pend.find(r => r.id === id); lsSet(DEMO_PENDING, pend.filter(r => r.id !== id)); rec.approvedAt = new Date().toISOString(); appr.push(rec); lsSet(DEMO_APPROVED, appr); toast("Manzoor ho gaya"); VIEWS.admin(cur.params); }
-    else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { lsSet(DEMO_PENDING, pend.filter(r => r.id !== id)); toast("Radd kar diya"); VIEWS.admin(cur.params); } }
-    else if (a === "del") { if (confirm("Ye record hata dein?")) { lsSet(DEMO_APPROVED, appr.filter(r => r.id !== id)); toast("Hata diya"); VIEWS.admin(cur.params); } }
+    const id = b.dataset.id, a = b.dataset.a, rf = () => VIEWS.admin(cur.params);
+    if (a === "ok") {
+      const rec = pend.find(r => r.id === id); lsSet(K_PEND, pend.filter(r => r.id !== id));
+      if (rec.rt === "route") { rts.push(rec); lsSet(K_RT, rts); }
+      else { rec.approvedAt = new Date().toISOString(); if (rec.editOf) { rec.id = rec.editOf; delete rec.editOf; } const i = appr.findIndex(r => r.id === rec.id); if (i >= 0) appr[i] = rec; else appr.push(rec); lsSet(K_APP, appr); }
+      toast("Manzoor ho gaya"); rf();
+    } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { lsSet(K_PEND, pend.filter(r => r.id !== id)); toast("Radd kar diya"); rf(); } }
+    else if (a === "del") { if (confirm("Ye record hata dein?")) { lsSet(K_APP, appr.filter(r => r.id !== id)); lsSet(K_RT, rts.filter(r => r.id !== id)); toast("Hata diya"); rf(); } }
     else if (a === "ed") {
-      const rec = pend.find(r => r.id === id);
-      $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" +
-        '<div class="fld"><label>Naam</label><input class="inp" id="eN" value="' + esc(rec.name) + '"></div>' +
-        '<div class="fld"><label>Kaam ki tafseel</label><input class="inp" id="eW" value="' + esc(rec.workText) + '"></div>' +
-        '<div class="fld"><label>Gaon / mohalla</label><input class="inp" id="eA" value="' + esc(rec.area) + '"></div>' +
-        '<button class="cta green" id="eSave">Mehfooz karein</button>';
+      const src = tab === "pending" ? pend : appr, key = tab === "pending" ? K_PEND : K_APP, rec = src.find(r => r.id === id);
+      $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" + (rec.shopName ? '<div class="fld"><label>Dukan ka naam</label><input class="inp" id="eS" value="' + esc(rec.shopName) + '"></div>' : "") +
+        '<div class="fld"><label>Naam</label><input class="inp" id="eN" value="' + esc(rec.name) + '"></div><div class="fld"><label>Tafseel</label><input class="inp" id="eW" value="' + esc(rec.workText) + '"></div><div class="fld"><label>Gaon / mohalla</label><input class="inp" id="eA" value="' + esc(rec.area) + '"></div><button class="cta green" id="eSave">Mehfooz karein</button>';
       $("ov").classList.add("on");
-      $("eSave").onclick = () => { rec.name = $("eN").value.trim() || rec.name; rec.workText = $("eW").value.trim() || rec.workText; rec.area = $("eA").value.trim() || rec.area; lsSet(DEMO_PENDING, pend); $("ov").classList.remove("on"); toast("Tabdeel ho gaya"); VIEWS.admin(cur.params); };
+      $("eSave").onclick = () => { if ($("eS")) rec.shopName = $("eS").value.trim() || rec.shopName; rec.name = $("eN").value.trim() || rec.name; rec.workText = $("eW").value.trim() || rec.workText; rec.area = $("eA").value.trim() || rec.area; lsSet(key, src); $("ov").classList.remove("on"); toast("Tabdeel ho gaya"); rf(); };
     }
   });
 };
@@ -599,7 +711,7 @@ VIEWS.admin = function (p) {
 /* ================== Shuruaat ================== */
 fetch("sample.json", { cache: "no-store" }).then(r => r.json()).then(d => {
   DATA = d;
-  const st = history.state && history.state.view ? history.state : { view: "home", params: {}, scroll: 0, d: 0 };
+  const st = location.hash === "#admin" ? { view: "admin", params: {}, scroll: 0, d: 0 } : history.state && history.state.view ? history.state : { view: "home", params: {}, scroll: 0, d: 0 };
   history.replaceState(st, "");
   show(st);
 }).catch(() => {
