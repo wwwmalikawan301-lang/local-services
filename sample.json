@@ -1,0 +1,49 @@
+{
+  "cities": [
+    { "id": "jhelum", "name": "Jhelum", "province": "Punjab" },
+    { "id": "lahore", "name": "Lahore", "province": "Punjab" },
+    { "id": "rawalpindi", "name": "Rawalpindi", "province": "Punjab" },
+    { "id": "islamabad", "name": "Islamabad", "province": "Islamabad" },
+    { "id": "sargodha", "name": "Sargodha", "province": "Punjab" }
+  ],
+  "categories": [
+    { "id": "gari", "name": "Gari", "icon": "car", "type": "people" },
+    { "id": "loader", "name": "Loader", "icon": "truck", "type": "people" },
+    { "id": "mistri", "name": "Mistri", "icon": "hammer", "type": "people" },
+    { "id": "plumber", "name": "Plumber", "icon": "droplet", "type": "people" },
+    { "id": "electrician", "name": "Electrician", "icon": "zap", "type": "people" },
+    { "id": "mechanic", "name": "Mechanic", "icon": "tool", "type": "people" },
+    { "id": "safar", "name": "Safar waqt", "icon": "bus", "type": "routes" },
+    { "id": "zaroori", "name": "Zaroori", "icon": "phoneCall", "type": "numbers" }
+  ],
+  "providers": [
+    { "id": "s1", "name": "Muhammad Aslam", "categoryId": "mistri", "tag": "Raj mistri", "workText": "Makan ki tameer aur marammat, 15 saal ka tajurba", "phone": "+923000000001", "whatsapp": "+923000000001", "city": "jhelum", "area": "Dina" },
+    { "id": "s2", "name": "Shabbir Ahmed", "categoryId": "mistri", "tag": "Carpenter", "workText": "Darwaze, khirkiyan aur furniture", "phone": "+923000000002", "whatsapp": "+923000000002", "city": "jhelum", "area": "Sohawa" },
+    { "id": "s3", "name": "Rafiq Hussain", "categoryId": "mistri", "tag": "Painter", "workText": "Ghar aur dukaan ka rang o rogan", "phone": "+923000000003", "whatsapp": "+923000000003", "city": "lahore", "area": "Gulberg" },
+    { "id": "s4", "name": "Bilal Khan", "categoryId": "loader", "tag": "Loader gari", "workText": "Saman ki muntaqili, shehr ke andar aur bahar", "phone": "+923000000004", "whatsapp": "+923000000004", "city": "jhelum", "area": "Jhelum Saddar" },
+    { "id": "s5", "name": "Imran Ali", "categoryId": "loader", "tag": "Truck", "workText": "Bhari saman ke liye truck, door ka safar bhi", "phone": "+923000000005", "whatsapp": "+923000000005", "city": "rawalpindi", "area": "Saddar" },
+    { "id": "s6", "name": "Naveed Iqbal", "categoryId": "gari", "tag": "Car", "workText": "Shehr aur door ke safar ke liye car, driver ke saath", "phone": "+923000000006", "whatsapp": "+923000000006", "city": "jhelum", "area": "Dina" },
+    { "id": "s7", "name": "Kamran Shah", "categoryId": "gari", "tag": "Rickshaw", "workText": "Rickshaw, shehr ke andar", "phone": "+923000000007", "whatsapp": "+923000000007", "city": "sargodha", "area": "Satellite Town" },
+    { "id": "s8", "name": "Tariq Mehmood", "categoryId": "plumber", "tag": "Plumber", "workText": "Nal, tanki aur sewerage ka kaam", "phone": "+923000000008", "whatsapp": "+923000000008", "city": "jhelum", "area": "Sohawa" },
+    { "id": "s9", "name": "Zubair Ahmed", "categoryId": "plumber", "tag": "Plumber", "workText": "Bathroom fitting aur pipe line", "phone": "+923000000009", "whatsapp": "+923000000009", "city": "islamabad", "area": "G-10" },
+    { "id": "s10", "name": "Adnan Butt", "categoryId": "electrician", "tag": "Electrician", "workText": "Ghar ki wiring, fan aur light ki marammat", "phone": "+923000000010", "whatsapp": "+923000000010", "city": "jhelum", "area": "Dina" },
+    { "id": "s11", "name": "Salman Raza", "categoryId": "electrician", "tag": "Solar", "workText": "Solar panel ki fitting aur service", "phone": "+923000000011", "whatsapp": "+923000000011", "city": "lahore", "area": "Johar Town" },
+    { "id": "s12", "name": "Usman Ghani", "categoryId": "mechanic", "tag": "Bike mechanic", "workText": "Motorcycle ki marammat aur service", "phone": "+923000000012", "whatsapp": "+923000000012", "city": "jhelum", "area": "Jhelum Saddar" },
+    { "id": "s13", "name": "Farhan Siddiq", "categoryId": "mechanic", "tag": "Car mechanic", "workText": "Car ka engine aur AC", "phone": "+923000000013", "whatsapp": "+923000000013", "city": "rawalpindi", "area": "Chaklala" }
+  ],
+  "routes": [
+    { "id": "r1", "from": "Dina", "to": "Jhelum", "updatedAt": "2026-11-01", "times": [
+      { "t": "6:30 AM", "v": "Van" }, { "t": "8:00 AM", "v": "Bus" }, { "t": "11:00 AM", "v": "Van" }, { "t": "2:30 PM", "v": "Van" }, { "t": "5:00 PM", "v": "Bus" } ],
+      "phone": "+923000000020", "whatsapp": "+923000000020" },
+    { "id": "r2", "from": "Jhelum", "to": "Dina", "updatedAt": "2026-11-01", "times": [
+      { "t": "7:30 AM", "v": "Van" }, { "t": "10:00 AM", "v": "Bus" }, { "t": "1:00 PM", "v": "Van" }, { "t": "4:00 PM", "v": "Van" }, { "t": "6:30 PM", "v": "Bus" } ],
+      "phone": "+923000000020", "whatsapp": "+923000000020" }
+  ],
+  "numbers": [
+    { "id": "n1", "name": "Police", "note": "Madad ke liye", "phone": "15" },
+    { "id": "n2", "name": "Rescue 1122", "note": "Hadsa aur ambulance", "phone": "1122" },
+    { "id": "n3", "name": "Fire brigade", "note": "Aag lagne par", "phone": "16" },
+    { "id": "n4", "name": "Edhi ambulance", "note": "Ambulance", "phone": "115" },
+    { "id": "n5", "name": "Motorway police", "note": "Motorway par madad", "phone": "130" }
+  ]
+}
