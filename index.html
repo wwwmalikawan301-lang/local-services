@@ -134,6 +134,7 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 #nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; background: var(--card); border-top: 1px solid var(--line); padding: 8px 6px calc(6px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,0.05); }
 #nav button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: var(--muted); padding: 4px 2px; position: relative; }
 #nav button svg.i { width: 24px; height: 24px; }
+#nav .nb { position: absolute; top: -4px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #C0392B; color: #fff; font-size: 12px; font-style: normal; font-weight: 600; line-height: 18px; text-align: center; }
 #nav button.on { color: var(--green); font-weight: 600; }
 #nav button.on::before { content: ""; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); width: 26px; height: 3px; background: var(--amber); border-radius: 3px; }
 
@@ -243,12 +244,27 @@ let DATA = null;
 const FB_CFG = { apiKey: "AIzaSyCJwrDidBG9KYTJYZuN84jJfm9cQBpCk0g", authDomain: "rabta-local.firebaseapp.com", projectId: "rabta-local", storageBucket: "rabta-local.firebasestorage.app", messagingSenderId: "1062049235779", appId: "1:1062049235779:web:2919c193f0fe8d276a25f6" };
 const ADMIN_UID = "XHskXFbxEofhvgRQa9IHqJfDlHo1";
 let AU = null, DB = null, ADM = { pend: [] };
+const stamp = x => x.createdAt || x.updatedAt || "";
+function ago(t) { if (!t) return ""; const m = Math.max(0, Math.round((Date.now() - new Date(t)) / 60000)); return m < 1 ? "abhi abhi" : m < 60 ? m + " minute pehle" : m < 1440 ? Math.round(m / 60) + " ghante pehle" : Math.round(m / 1440) + " din pehle"; }
+const sortP = l => l.sort((a, b) => stamp(b).localeCompare(stamp(a)));
+function watchPending() {
+  if (ADM.unsub || !DB || !isAdminUser()) return;
+  ADM.unsub = DB.collection("pending").onSnapshot(snap => {
+    ADM.pend = sortP(snap.docs.map(d => Object.assign({}, d.data(), { id: d.id })));
+    if (ADM.init) snap.docChanges().forEach(c => { if (c.type === "added") toast("Nayi darkhwast aayi"); });
+    ADM.init = true; updateNav();
+    if (cur && cur.view === "home") VIEWS.home();
+    if (cur && cur.view === "admin" && !$("ov").classList.contains("on")) adminShow(cur.params);
+  }, () => { ADM.unsub = null; });
+}
+function unwatchPending() { if (ADM.unsub) ADM.unsub(); ADM = { pend: [] }; }
 function uid() { return AU && AU.currentUser ? AU.currentUser.uid : ""; }
 function isAdminUser() { return uid() === ADMIN_UID; }
 async function fbInit() {
   firebase.initializeApp(FB_CFG); AU = firebase.auth(); DB = firebase.firestore();
   await new Promise(r => { const u = AU.onAuthStateChanged(() => { u(); r(); }); });
   if (!AU.currentUser) await AU.signInAnonymously();
+  AU.onAuthStateChanged(() => { if (isAdminUser()) watchPending(); else if (ADM.unsub) unwatchPending(); if (cur) updateNav(); });
 }
 async function loadRemote() {
   try {
@@ -341,10 +357,11 @@ function setHeader(o) {
   $("hRight").innerHTML = o.right || "";
 }
 function updateNav() {
-  const map = { home: "home", search: "search", favs: "favs", add: "add", added: "add", addroute: "add" };
+  const map = { home: "home", search: "search", favs: "favs", add: "add", added: "add", addroute: "add", admin: "admin" };
   const on = map[cur.view] || "";
   const items = [["home", "home", "Home"], ["search", "search", "Dhoondein"], ["favs", "heart", "Pasandida"], ["add", "userPlus", "Add"]];
-  $("nav").innerHTML = items.map(i => '<button data-n="' + i[0] + '" class="' + (on === i[0] ? "on" : "") + '">' + ic(i[1]) + "<span>" + i[2] + "</span></button>").join("");
+  if (isAdminUser()) items.push(["admin", "lock", "Admin"]);
+  $("nav").innerHTML = items.map(i => '<button data-n="' + i[0] + '" class="' + (on === i[0] ? "on" : "") + '">' + ic(i[1]) + (i[0] === "admin" && ADM.pend.length ? '<i class="nb">' + ADM.pend.length + "</i>" : "") + "<span>" + i[2] + "</span></button>").join("");
 }
 $("nav").addEventListener("click", e => {
   const b = e.target.closest("button[data-n]");
@@ -409,6 +426,7 @@ function bindCityBtn() { const b = $("cityBtn"); if (b) b.onclick = openCityShee
 VIEWS.home = function () {
   setHeader({ home: true, title: APP_NAME, sub: TAGLINE, right: cityPill() });
   $("app").innerHTML =
+    (isAdminUser() && ADM.pend.length ? '<div class="note" data-go="admin" style="cursor:pointer;margin-top:0">' + ic("clock") + "<span><b>" + ADM.pend.length + " nayi darkhwast</b> manzoori ke intezar mein. Dekhne ke liye yahan dabayein.</span></div>" : "") +
     '<div class="sbox fake" id="fakeSearch">' + ic("search") + "<span>Naam ya kaam talash karein</span></div>" +
     '<div class="h2" style="margin-top:6px">Kya chahiye?</div>' +
     '<div class="grid" style="grid-template-columns:repeat(' + (DATA.categories.length % 4 === 0 ? 4 : DATA.categories.length % 3 === 0 ? 3 : 4) + ',minmax(0,1fr))">' + DATA.categories.map(c => '<button class="cat" data-cat="' + c.id + '"><div class="ci">' + ic(c.icon) + "</div>" + esc(c.name) + "</button>").join("") + "</div>" +
@@ -709,9 +727,9 @@ VIEWS.adminDraw = function (p) {
   setHeader({ title: "Admin", sub: "Sirf maalik", right: '<div class="hbtn">' + ic("lock") + "</div>" });
   const list = tab === "pending" ? pend : appr.concat(rts);
   const row = x => x.rt === "route" ?
-    '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + "</div>" :
+    '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + "</div>" :
     '<div class="card"><div class="prow" style="cursor:default">' + avatar({ name: x.shopName || x.name, dpB64: x.dpB64 }) + '<div class="pinfo"><div class="pname">' + esc(x.shopName || x.name) + (tab === "pending" ? (x.editOf ? ' <span class="bdg">Tabdeeli</span>' : ' <span class="bdg">Naya</span>') : "") + "</div>" +
-    (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
+    (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
     (x.workPhotoB64 ? '<img alt="" src="' + x.workPhotoB64 + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
   const acts = x => tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button>' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
     : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
@@ -719,7 +737,7 @@ VIEWS.adminDraw = function (p) {
     (list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { saveParams({ tab: b.dataset.tab }); VIEWS.admin(cur.params); });
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
-    const id = b.dataset.id, a = b.dataset.a, rf = async () => { await loadRemote(); VIEWS.admin(cur.params); };
+    const id = b.dataset.id, a = b.dataset.a, rf = async () => { await loadRemote(); VIEWS.admin(cur.params); updateNav(); };
     try {
       if (a === "ok") {
         const rec = pend.find(r => r.id === id), d = Object.assign({}, rec); delete d.id;
@@ -760,12 +778,19 @@ VIEWS.admin = async function (p) {
     return;
   }
   $("app").innerHTML = '<div class="loading">Load ho raha hai...</div>';
-  try { const q = await DB.collection("pending").get(); ADM.pend = q.docs.map(d => Object.assign({}, d.data(), { id: d.id })); }
+  try { const q = await DB.collection("pending").get(); ADM.pend = sortP(q.docs.map(d => Object.assign({}, d.data(), { id: d.id }))); }
   catch (e) { $("app").innerHTML = emptyBox("Pending list nahi khuli: " + (e.code || "error"), false); return; }
-  VIEWS.adminDraw(p);
-  $("app").insertAdjacentHTML("beforeend", '<button class="link" id="aOut">Logout</button>');
-  $("aOut").onclick = async () => { await AU.signOut(); await AU.signInAnonymously(); go("home"); };
+  watchPending(); updateNav(); adminShow(p);
 };
+function adminShow(p) {
+  VIEWS.adminDraw(p);
+  $("app").insertAdjacentHTML("beforeend", '<button class="link" id="aOut">Admin se logout</button>');
+  $("aOut").onclick = async () => { if (!confirm("Admin se logout karein?")) return; unwatchPending(); await AU.signOut(); await AU.signInAnonymously(); updateNav(); go("home"); };
+}
+
+/* Admin login: header ke naam par 5 baar tap */
+let tapN = 0, tapT;
+$("hTitle").addEventListener("click", () => { tapN++; clearTimeout(tapT); tapT = setTimeout(() => tapN = 0, 2500); if (tapN >= 5) { tapN = 0; go("admin"); } });
 
 /* ================== Shuruaat ================== */
 fetch("sample.json", { cache: "no-store" }).then(r => r.json()).then(async d => {
