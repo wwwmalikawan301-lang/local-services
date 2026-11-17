@@ -177,6 +177,9 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 <div id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 /* ================== Bunyadi settings ================== */
 const APP_NAME = "Rabta";
@@ -237,20 +240,48 @@ function waLink(num, text) { return "https://wa.me/" + String(num).replace(/\D/g
 
 /* ================== Data ================== */
 let DATA = null;
+const FB_CFG = { apiKey: "AIzaSyCJwrDidBG9KYTJYZuN84jJfm9cQBpCk0g", authDomain: "rabta-local.firebaseapp.com", projectId: "rabta-local", storageBucket: "rabta-local.firebasestorage.app", messagingSenderId: "1062049235779", appId: "1:1062049235779:web:2919c193f0fe8d276a25f6" };
+const ADMIN_UID = "XHskXFbxEofhvgRQa9IHqJfDlHo1";
+let AU = null, DB = null, ADM = { pend: [] };
+function uid() { return AU && AU.currentUser ? AU.currentUser.uid : ""; }
+function isAdminUser() { return uid() === ADMIN_UID; }
+async function fbInit() {
+  firebase.initializeApp(FB_CFG); AU = firebase.auth(); DB = firebase.firestore();
+  await new Promise(r => { const u = AU.onAuthStateChanged(() => { u(); r(); }); });
+  if (!AU.currentUser) await AU.signInAnonymously();
+}
+async function loadRemote() {
+  try {
+    const q = await Promise.all([DB.collection("providers").get(), DB.collection("routes").get()]);
+    const m = d => Object.assign({}, d.data(), { id: d.id });
+    DATA.providers = q[0].docs.map(m); DATA.routes = q[1].docs.map(m);
+    lsSet("rb_cache", { p: DATA.providers, r: DATA.routes });
+  } catch (e) { const c = lsGet("rb_cache", { p: [], r: [] }); DATA.providers = c.p; DATA.routes = c.r; }
+}
+async function sendPending(rec) {
+  try {
+    if (!AU) throw 0;
+    if (!uid()) await AU.signInAnonymously();
+    const d = Object.assign({}, rec); delete d.id; d.ownerUid = uid();
+    await DB.collection("pending").add(d);
+    if (rec.editOf) { const m = lsGet("rb_editsent", {}); m[rec.editOf] = new Date().toISOString(); lsSet("rb_editsent", m); }
+    return true;
+  } catch (e) { toast("Bheja nahi gaya. Internet check karein."); return false; }
+}
 const K_PEND = "rb_pending", K_APP = "rb_approved", K_RT = "rb_routes", K_MINE = "rb_mine", FAVS = "rb_favs", K_LOC = "rb_loc", K_GEO = "rb_geo";
 const norm = s => String(s == null ? "" : s).trim().toLowerCase();
 const sameCity = (a, b) => { a = norm(a); b = norm(b); return !!a && !!b && (a === b || a.includes(b) || b.includes(a)); };
 const cityName = x => x || "";
 const nice = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-function allProviders() { return DATA.providers.concat(lsGet(K_APP, [])); }
-function allRoutes() { return DATA.routes.concat(lsGet(K_RT, [])); }
+function allProviders() { return DATA.providers; }
+function allRoutes() { return DATA.routes; }
 function catById(id) { return DATA.categories.find(c => c.id === id); }
 function getFavs() { return lsGet(FAVS, []); }
 function isFav(id) { return getFavs().includes(id); }
 function toggleFav(id) { let f = getFavs(); f = f.includes(id) ? f.filter(x => x !== id) : f.concat(id); lsSet(FAVS, f); return f.includes(id); }
 function selCity() { const l = lsGet(K_LOC, null); return l ? l.name : ""; }
 function geo() { const l = lsGet(K_LOC, null); return l && l.lat != null ? l : null; }
-function isMine(id) { return lsGet(K_MINE, []).includes(id); }
+function isMine(id) { const x = DATA.providers.find(p => p.id === id); return !!x && !!x.ownerUid && x.ownerUid === uid(); }
 function dist(a, b) { const R = 6371, r = x => x * Math.PI / 180, dl = r(b.lat - a.lat), dn = r(b.lng - a.lng); const h = Math.sin(dl / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
 function knownCities() { const m = {}; DATA.cities.map(c => c.name).concat(allProviders().map(p => p.city)).forEach(n => { if (n && !m[norm(n)]) m[norm(n)] = n; }); return Object.values(m).sort(); }
 function fmt12(t) { const a = String(t).split(":").map(Number), h = a[0], m = a[1] || 0; return ((h + 11) % 12 + 1) + ":" + String(m).padStart(2, "0") + (h < 12 ? " AM" : " PM"); }
@@ -464,7 +495,7 @@ VIEWS.detail = function (p) {
   if (!x) { setHeader({ title: "Nahi mila" }); $("app").innerHTML = emptyBox("Ye record ab maujood nahi.", false); return; }
   const cat = catById(x.categoryId), t = x.shopName || x.name, loc = [x.area, x.city].filter(Boolean).join(", ");
   const msg = "Assalam o Alaikum, main ne aap ka number " + APP_NAME + " app se liya hai. Mujhe aap ke kaam ki zaroorat hai.";
-  const waitEdit = isMine(x.id) && lsGet(K_PEND, []).some(r => r.editOf === x.id);
+  const sent = lsGet("rb_editsent", {})[x.id], waitEdit = isMine(x.id) && !!sent && !(x.approvedAt && x.approvedAt > sent);
   setHeader({ title: t, sub: cat ? cat.name : "" });
   $("app").innerHTML =
     '<div class="card" style="text-align:center;padding:20px 14px"><div style="display:flex;justify-content:center;margin-bottom:10px">' + avatar({ name: t, dpB64: x.dpB64 }, true) + "</div>" +
@@ -486,7 +517,7 @@ VIEWS.detail = function (p) {
   if ($("dEdit")) $("dEdit").onclick = () => go("add", { edit: x.id });
   $("dFav").onclick = () => { const on = toggleFav(x.id); toast(on ? "Pasandida mein jod diya" : "Pasandida se hata diya"); VIEWS.detail(p); };
   $("dShare").onclick = () => { const s = t + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME; if (navigator.share) navigator.share({ text: s }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast("Copy ho gaya")); };
-  $("dReport").onclick = () => toast("Shukriya. (Demo: asli app mein ye admin ko jayega)");
+  $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300) }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
 };
 
 VIEWS.routes = function (p) {
@@ -604,7 +635,7 @@ VIEWS.add = function (p) {
     '<button type="button" class="btn ghost" id="fGps" style="width:100%;margin-bottom:14px">' + ic("locate") + "Meri jagah khud bharein (GPS)</button>" +
     '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke mera naam, number aur tasveer sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
     '<button class="cta green" id="fSubmit">' + (e ? "Tabdeeli bhejein" : "Bhejein") + "</button></div>" +
-    '<div class="note">' + ic("lock") + "<span>Demo: abhi ye maloomat sirf aap ke phone mein rehti hain. Asli app mein ye admin ke paas jayegi.</span></div>";
+    '<div class="note">' + ic("lock") + "<span>Aap ki detail admin ke paas jaye gi. Manzoori ke baad sab ko nazar aaye gi.</span></div>";
   $("fName").value = v.name || ""; $("fWork2").value = v.workText || ""; $("fArea").value = v.area || ""; $("fShop").value = v.shopName || ""; $("fTag").value = v.kind === "shop" ? (v.tag || "") : ""; if (v.city && !inList) $("fCity2").value = v.city;
   function setKind(k) { kind = k; $("shopBox").style.display = k === "shop" ? "block" : "none"; $("catBox").style.display = k === "shop" ? "none" : "block"; document.querySelectorAll("#kseg button").forEach(b => b.classList.toggle("on", b.dataset.k === k)); }
   setKind(kind); document.querySelectorAll("#kseg button").forEach(b => b.onclick = () => setKind(b.dataset.k));
@@ -634,8 +665,7 @@ VIEWS.add = function (p) {
     if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, #e_fConsent.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
     const rec = { id: (e ? "e" : "p") + Date.now(), kind, shopName: shop ? sn : "", name, categoryId: shop ? "dukan" : cat, tag: shop ? tg : catById(cat).name, workText: work, phone: pn.phone, whatsapp: pn.whatsapp, city, area, lat: pos ? pos.lat : null, lng: pos ? pos.lng : null, dpB64: photos.dp, workPhotoB64: photos.work, consent: true, createdAt: new Date().toISOString() };
     if (e) rec.editOf = e.id;
-    if (!saveRec(K_PEND, rec, e ? null : rec.id)) return;
-    go("added", {}, { replace: true });
+    const sb = $("fSubmit"); sb.disabled = true; sendPending(rec).then(ok => { sb.disabled = false; if (ok) go("added", {}, { replace: true }); });
   };
 };
 
@@ -649,7 +679,7 @@ VIEWS.addroute = function () {
     '<div class="fld"><label>Chalne ka waqt (pehle stop se)</label><div class="rows" id="timeBox"></div><button type="button" class="btn ghost" id="timeAdd" style="width:100%">+ Waqt jodein</button><div class="ferr" id="e_timeBox"></div></div>' +
     phoneBox({}).html + '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke ye number aur safar sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
     '<button class="cta green" id="rSubmit">Bhejein</button></div>' +
-    '<div class="note">' + ic("lock") + "<span>Demo: abhi ye sirf aap ke phone mein rehta hai. Asli app mein admin jaanch kar ke dikhaye ga.</span></div>";
+    '<div class="note">' + ic("lock") + "<span>Aap ka safar admin jaanch kar ke dikhaye ga.</span></div>";
   const stops = dynRows("stopBox", "text", "Stop ka naam", []), times = dynRows("timeBox", "time", "", []);
   $("stopAdd").onclick = stops.add; $("timeAdd").onclick = times.add;
   const sv = b => { veh = b; document.querySelectorAll("#vseg button").forEach(x => x.classList.toggle("on", x.dataset.v === b)); };
@@ -664,8 +694,7 @@ VIEWS.addroute = function () {
     const ok = $("fConsent").checked; $("e_fConsent").textContent = "Ijazat zaroori hai."; $("e_fConsent").classList.toggle("show", !ok); er = !ok || er;
     if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, .ferr.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
     const rec = { id: "r" + Date.now(), rt: "route", from, to, stops: st, vehicle: veh, times: tm, phone: pn.phone, whatsapp: pn.whatsapp, consent: true, updatedAt: new Date().toISOString() };
-    if (!saveRec(K_PEND, rec, rec.id)) return;
-    go("added", {}, { replace: true });
+    const sb = $("rSubmit"); sb.disabled = true; sendPending(rec).then(ok => { sb.disabled = false; if (ok) go("added", {}, { replace: true }); });
   };
 };
 VIEWS.added = function () {
@@ -675,9 +704,9 @@ VIEWS.added = function () {
 };
 
 /* ================== Admin (DEMO: sirf maalik, link home par nahi) ================== */
-VIEWS.admin = function (p) {
-  const tab = p.tab || "pending", pend = lsGet(K_PEND, []), appr = lsGet(K_APP, []), rts = lsGet(K_RT, []);
-  setHeader({ title: "Admin (demo)", sub: "Asli app mein sirf login ke baad", right: '<div class="hbtn">' + ic("lock") + "</div>" });
+VIEWS.adminDraw = function (p) {
+  const tab = p.tab || "pending", pend = ADM.pend, appr = DATA.providers.filter(x => x.rt !== "route"), rts = DATA.routes;
+  setHeader({ title: "Admin", sub: "Sirf maalik", right: '<div class="hbtn">' + ic("lock") + "</div>" });
   const list = tab === "pending" ? pend : appr.concat(rts);
   const row = x => x.rt === "route" ?
     '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + "</div>" :
@@ -689,28 +718,60 @@ VIEWS.admin = function (p) {
   $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button></div>" +
     (list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { saveParams({ tab: b.dataset.tab }); VIEWS.admin(cur.params); });
-  document.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
-    const id = b.dataset.id, a = b.dataset.a, rf = () => VIEWS.admin(cur.params);
-    if (a === "ok") {
-      const rec = pend.find(r => r.id === id); lsSet(K_PEND, pend.filter(r => r.id !== id));
-      if (rec.rt === "route") { rts.push(rec); lsSet(K_RT, rts); }
-      else { rec.approvedAt = new Date().toISOString(); if (rec.editOf) { rec.id = rec.editOf; delete rec.editOf; } const i = appr.findIndex(r => r.id === rec.id); if (i >= 0) appr[i] = rec; else appr.push(rec); lsSet(K_APP, appr); }
-      toast("Manzoor ho gaya"); rf();
-    } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { lsSet(K_PEND, pend.filter(r => r.id !== id)); toast("Radd kar diya"); rf(); } }
-    else if (a === "del") { if (confirm("Ye record hata dein?")) { lsSet(K_APP, appr.filter(r => r.id !== id)); lsSet(K_RT, rts.filter(r => r.id !== id)); toast("Hata diya"); rf(); } }
-    else if (a === "ed") {
-      const src = tab === "pending" ? pend : appr, key = tab === "pending" ? K_PEND : K_APP, rec = src.find(r => r.id === id);
-      $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" + (rec.shopName ? '<div class="fld"><label>Dukan ka naam</label><input class="inp" id="eS" value="' + esc(rec.shopName) + '"></div>' : "") +
-        '<div class="fld"><label>Naam</label><input class="inp" id="eN" value="' + esc(rec.name) + '"></div><div class="fld"><label>Tafseel</label><input class="inp" id="eW" value="' + esc(rec.workText) + '"></div><div class="fld"><label>Gaon / mohalla</label><input class="inp" id="eA" value="' + esc(rec.area) + '"></div><button class="cta green" id="eSave">Mehfooz karein</button>';
-      $("ov").classList.add("on");
-      $("eSave").onclick = () => { if ($("eS")) rec.shopName = $("eS").value.trim() || rec.shopName; rec.name = $("eN").value.trim() || rec.name; rec.workText = $("eW").value.trim() || rec.workText; rec.area = $("eA").value.trim() || rec.area; lsSet(key, src); $("ov").classList.remove("on"); toast("Tabdeel ho gaya"); rf(); };
-    }
+  document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+    const id = b.dataset.id, a = b.dataset.a, rf = async () => { await loadRemote(); VIEWS.admin(cur.params); };
+    try {
+      if (a === "ok") {
+        const rec = pend.find(r => r.id === id), d = Object.assign({}, rec); delete d.id;
+        if (rec.rt === "route") await DB.collection("routes").doc(id).set(d);
+        else {
+          let pid = id;
+          if (rec.editOf) { pid = rec.editOf; const old = DATA.providers.find(x => x.id === pid); if (old && old.ownerUid !== rec.ownerUid && !confirm("Ye tabdeeli asli maalik ki taraf se nahi lagti. Phir bhi manzoor karein?")) return; delete d.editOf; }
+          d.approvedAt = new Date().toISOString(); await DB.collection("providers").doc(pid).set(d);
+        }
+        await DB.collection("pending").doc(id).delete(); toast("Manzoor ho gaya"); rf();
+      } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { await DB.collection("pending").doc(id).delete(); toast("Radd kar diya"); rf(); } }
+      else if (a === "del") { if (confirm("Ye record hata dein?")) { await DB.collection(DATA.routes.some(r => r.id === id) ? "routes" : "providers").doc(id).delete(); toast("Hata diya"); rf(); } }
+      else if (a === "ed") {
+        const rec = (tab === "pending" ? pend : appr).find(r => r.id === id);
+        $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" + (rec.shopName ? '<div class="fld"><label>Dukan ka naam</label><input class="inp" id="eS" value="' + esc(rec.shopName) + '"></div>' : "") +
+          '<div class="fld"><label>Naam</label><input class="inp" id="eN" value="' + esc(rec.name) + '"></div><div class="fld"><label>Tafseel</label><input class="inp" id="eW" value="' + esc(rec.workText) + '"></div><div class="fld"><label>Gaon / mohalla</label><input class="inp" id="eA" value="' + esc(rec.area) + '"></div><button class="cta green" id="eSave">Mehfooz karein</button>';
+        $("ov").classList.add("on");
+        $("eSave").onclick = async () => {
+          const u = { name: $("eN").value.trim() || rec.name, workText: $("eW").value.trim() || rec.workText, area: $("eA").value.trim() || rec.area };
+          if ($("eS")) u.shopName = $("eS").value.trim() || rec.shopName;
+          try { await DB.collection(tab === "pending" ? "pending" : "providers").doc(id).update(u); $("ov").classList.remove("on"); toast("Tabdeel ho gaya"); rf(); } catch (e) { toast("Nakaam: " + (e.code || "error")); }
+        };
+      }
+    } catch (e) { toast("Nakaam: " + (e.code || "error")); }
   });
+};
+VIEWS.admin = async function (p) {
+  setHeader({ title: "Admin", sub: "Sirf maalik", right: '<div class="hbtn">' + ic("lock") + "</div>" });
+  if (!AU) { $("app").innerHTML = emptyBox("Firebase nahi juda. Internet check karein.", false); return; }
+  if (!isAdminUser()) {
+    $("app").innerHTML = '<div class="card"><div class="fld"><label for="aE">Email</label><input class="inp" id="aE" type="email" autocomplete="username"></div><div class="fld"><label for="aP">Password</label><input class="inp" id="aP" type="password" autocomplete="current-password"></div><button class="cta green" id="aGo">Login</button></div>';
+    $("aGo").onclick = async () => {
+      try { await AU.signInWithEmailAndPassword($("aE").value.trim(), $("aP").value); }
+      catch (e) { toast("Email ya password ghalat"); return; }
+      if (!isAdminUser()) { toast("Ye admin account nahi"); await AU.signOut(); await AU.signInAnonymously(); return; }
+      VIEWS.admin(cur.params);
+    };
+    return;
+  }
+  $("app").innerHTML = '<div class="loading">Load ho raha hai...</div>';
+  try { const q = await DB.collection("pending").get(); ADM.pend = q.docs.map(d => Object.assign({}, d.data(), { id: d.id })); }
+  catch (e) { $("app").innerHTML = emptyBox("Pending list nahi khuli: " + (e.code || "error"), false); return; }
+  VIEWS.adminDraw(p);
+  $("app").insertAdjacentHTML("beforeend", '<button class="link" id="aOut">Logout</button>');
+  $("aOut").onclick = async () => { await AU.signOut(); await AU.signInAnonymously(); go("home"); };
 };
 
 /* ================== Shuruaat ================== */
-fetch("sample.json", { cache: "no-store" }).then(r => r.json()).then(d => {
-  DATA = d;
+fetch("sample.json", { cache: "no-store" }).then(r => r.json()).then(async d => {
+  DATA = d; DATA.providers = []; DATA.routes = [];
+  try { await fbInit(); } catch (e) { AU = null; DB = null; }
+  await loadRemote();
   const st = location.hash === "#admin" ? { view: "admin", params: {}, scroll: 0, d: 0 } : history.state && history.state.view ? history.state : { view: "home", params: {}, scroll: 0, d: 0 };
   history.replaceState(st, "");
   show(st);
