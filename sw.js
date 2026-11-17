@@ -1,5 +1,5 @@
 // Rabta service worker: network-first (naya data pehle, na mile to cache se)
-const CACHE = "rabta-v3";
+const CACHE = "rabta-v4";
 const FILES = ["./", "./index.html", "./sample.json", "./manifest.json", "./rabta-192.png", "./rabta-512.png"];
 
 self.addEventListener("install", e => {
