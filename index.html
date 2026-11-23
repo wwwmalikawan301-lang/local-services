@@ -223,6 +223,7 @@ const ICONS = {
 };
 const ic = n => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || "") + '</svg>';
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const safeImg = s => (typeof s === "string" && s.length < 150000 && /^data:image[/](jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(s)) ? s : "";
 const $ = id => document.getElementById(id);
 
 /* ================== Chhoti madad ================== */
@@ -234,7 +235,7 @@ const AV_COLORS = [["#E6F1FB", "#0C447C"], ["#FBEAF0", "#72243E"], ["#EAF3DE", "
 function avatar(p, big) {
   let h = 0; for (const c of p.name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const col = AV_COLORS[h % AV_COLORS.length];
-  const inner = p.dpB64 ? '<img alt="" src="' + p.dpB64 + '">' : esc(p.name.trim().charAt(0).toUpperCase());
+  const inner = safeImg(p.dpB64) ? '<img alt="" src="' + safeImg(p.dpB64) + '">' : esc(p.name.trim().charAt(0).toUpperCase());
   return '<div class="av' + (big ? " big" : "") + '" style="background:' + col[0] + ";color:" + col[1] + '">' + inner + "</div>";
 }
 function waLink(num, text) { return "https://wa.me/" + String(num).replace(/\D/g, "") + (text ? "?text=" + encodeURIComponent(text) : ""); }
@@ -524,7 +525,7 @@ VIEWS.detail = function (p) {
     (loc ? '<div class="ploc" style="justify-content:center;margin-top:8px">' + ic("pin") + esc(loc) + "</div>" : "") +
     '<div class="acts"><a class="btn call" href="tel:' + esc(x.phone) + '">' + ic("phone") + "Call</a>" +
     '<a class="btn wa" href="' + esc(waLink(x.whatsapp || x.phone, msg)) + '" target="_blank" rel="noopener">' + ic("chat") + "WhatsApp</a></div></div>" +
-    (x.workPhotoB64 ? '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + x.workPhotoB64 + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>' : "") +
+    (safeImg(x.workPhotoB64) ? '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>' : "") +
     '<div class="card"><div class="kv"><span>Phone</span><span>' + esc(x.phone) + "</span></div>" +
     '<div class="kv"><span>Category</span><span>' + esc(cat ? cat.name : "") + "</span></div>" +
     '<div class="kv"><span>Shehr</span><span>' + esc(x.city) + "</span></div></div>" +
@@ -640,8 +641,8 @@ VIEWS.add = function (p) {
   const cats = DATA.categories.filter(c => c.type === "people" && c.id !== "dukan"), cl = knownCities();
   const inList = v.city && cl.some(n => norm(n) === norm(v.city)), ph = phoneBox(v);
   $("app").innerHTML = (e ? "" : addTabs("p")) + '<div class="card">' +
-    '<div class="pics"><div class="pic" id="picDp">' + (v.dpB64 ? '<img alt="" src="' + v.dpB64 + '">' : "") + ic("camera") + '<span>Apni tasveer (DP)</span><input type="file" accept="image/*" id="fDp"></div>' +
-    '<div class="pic" id="picWork">' + (v.workPhotoB64 ? '<img alt="" src="' + v.workPhotoB64 + '">' : "") + ic("image") + '<span>Kaam / dukan ki tasveer</span><input type="file" accept="image/*" id="fWork"></div></div>' +
+    '<div class="pics"><div class="pic" id="picDp">' + (safeImg(v.dpB64) ? '<img alt="" src="' + safeImg(v.dpB64) + '">' : "") + ic("camera") + '<span>Apni tasveer (DP)</span><input type="file" accept="image/*" id="fDp"></div>' +
+    '<div class="pic" id="picWork">' + (safeImg(v.workPhotoB64) ? '<img alt="" src="' + safeImg(v.workPhotoB64) + '">' : "") + ic("image") + '<span>Kaam / dukan ki tasveer</span><input type="file" accept="image/*" id="fWork"></div></div>' +
     '<div class="seg" id="kseg"><button type="button" data-k="work">Main kaam karta hoon</button><button type="button" data-k="shop">Meri dukan hai</button></div>' +
     '<div id="shopBox">' + fld("fShop", "Dukan ka naam", "Dukan ka naam likhein") + fld("fTag", "Dukan ki qisam", "Jaise: Kiryana, Mobile, Dawai") + "</div>" +
     fld("fName", "Aap ka naam", "Poora naam") +
@@ -659,7 +660,7 @@ VIEWS.add = function (p) {
   setKind(kind); document.querySelectorAll("#kseg button").forEach(b => b.onclick = () => setKind(b.dataset.k));
   $("fCity").onchange = () => { $("ocBox").style.display = $("fCity").value === "__o" ? "block" : "none"; };
   $("fGps").onclick = () => getGps(r => { pos = { lat: Math.round(r.lat * 100) / 100, lng: Math.round(r.lng * 100) / 100 }; if (r.city) { const o = Array.from($("fCity").options).find(x => norm(x.value) === norm(r.city)); if (o) $("fCity").value = o.value; else { $("fCity").value = "__o"; $("ocBox").style.display = "block"; $("fCity2").value = r.city; } } if (r.area) $("fArea").value = r.area; toast("Jagah bhar di gayi, check kar lein"); });
-  const photos = { dp: v.dpB64 || "", work: v.workPhotoB64 || "" };
+  const photos = { dp: safeImg(v.dpB64), work: safeImg(v.workPhotoB64) };
   function bindPic(inputId, boxId, key, side) {
     $(inputId).onchange = async ev => {
       const f = ev.target.files && ev.target.files[0]; if (!f) return;
@@ -730,7 +731,7 @@ VIEWS.adminDraw = function (p) {
     '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + "</div>" :
     '<div class="card"><div class="prow" style="cursor:default">' + avatar({ name: x.shopName || x.name, dpB64: x.dpB64 }) + '<div class="pinfo"><div class="pname">' + esc(x.shopName || x.name) + (tab === "pending" ? (x.editOf ? ' <span class="bdg">Tabdeeli</span>' : ' <span class="bdg">Naya</span>') : "") + "</div>" +
     (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
-    (x.workPhotoB64 ? '<img alt="" src="' + x.workPhotoB64 + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
+    (safeImg(x.workPhotoB64) ? '<img alt="" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
   const acts = x => tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button>' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
     : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
   $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button></div>" +
