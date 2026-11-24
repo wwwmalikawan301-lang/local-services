@@ -268,19 +268,31 @@ async function fbInit() {
   if (!AU.currentUser) await AU.signInAnonymously();
   AU.onAuthStateChanged(() => { if (isAdminUser()) watchPending(); else if (ADM.unsub) unwatchPending(); if (cur) updateNav(); });
 }
+async function tomb(id) { try { await DB.collection("deleted").doc(id).set({ at: new Date().toISOString() }); } catch (e) {} }
+async function delPhoto(id) { try { await DB.collection("photos").doc(id).delete(); } catch (e) {} }
 async function loadRemote() {
+  const c = lsGet("rb_cache", null), now = Date.now();
   try {
-    const q = await Promise.all([DB.collection("providers").get(), DB.collection("routes").get()]);
     const m = d => Object.assign({}, d.data(), { id: d.id });
-    DATA.providers = q[0].docs.map(m); DATA.routes = q[1].docs.map(m);
-    lsSet("rb_cache", { p: DATA.providers, r: DATA.routes });
-  } catch (e) { const c = lsGet("rb_cache", { p: [], r: [] }); DATA.providers = c.p; DATA.routes = c.r; }
+    let P, R, fullAt = now;
+    if (c && c.since && c.full && now - c.full < 604800000) {
+      const q = await Promise.all([DB.collection("providers").where("approvedAt", ">", c.since).get(), DB.collection("routes").where("approvedAt", ">", c.since).get(), DB.collection("deleted").where("at", ">", c.since).get()]);
+      const gone = q[2].docs.map(d => d.id);
+      const merge = (old, upd) => { const mp = new Map(old.map(x => [x.id, x])); gone.forEach(id => mp.delete(id)); upd.docs.forEach(d => mp.set(d.id, m(d))); return Array.from(mp.values()); };
+      P = merge(c.p, q[0]); R = merge(c.r, q[1]); fullAt = c.full;
+    } else {
+      const q = await Promise.all([DB.collection("providers").get(), DB.collection("routes").get()]);
+      P = q[0].docs.map(m); R = q[1].docs.map(m);
+    }
+    DATA.providers = P; DATA.routes = R;
+    lsSet("rb_cache", { p: P, r: R, since: new Date(now - 3600000).toISOString(), full: fullAt });
+  } catch (e) { const k = c || { p: [], r: [] }; DATA.providers = k.p || []; DATA.routes = k.r || []; }
 }
 async function sendPending(rec) {
   try {
     if (!AU) throw 0;
     if (!uid()) await AU.signInAnonymously();
-    const d = Object.assign({}, rec); delete d.id; d.ownerUid = uid();
+    const d = Object.assign({}, rec); delete d.id; d.ownerUid = uid(); ["dpB64", "workPhotoB64"].forEach(k => { if (!d[k]) delete d[k]; });
     await DB.collection("pending").add(d);
     if (rec.editOf) { const m = lsGet("rb_editsent", {}); m[rec.editOf] = new Date().toISOString(); lsSet("rb_editsent", m); }
     return true;
@@ -526,7 +538,7 @@ VIEWS.detail = function (p) {
     (loc ? '<div class="ploc" style="justify-content:center;margin-top:8px">' + ic("pin") + esc(loc) + "</div>" : "") +
     '<div class="acts"><a class="btn call" href="tel:' + esc(x.phone) + '">' + ic("phone") + "Call</a>" +
     '<a class="btn wa" href="' + esc(waLink(x.whatsapp || x.phone, msg)) + '" target="_blank" rel="noopener">' + ic("chat") + "WhatsApp</a></div></div>" +
-    (safeImg(x.workPhotoB64) ? '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>' : "") +
+    (safeImg(x.workPhotoB64) ? '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>' : (x.hasWork ? '<div id="dWork"></div>' : "")) +
     '<div class="card"><div class="kv"><span>Phone</span><span>' + esc(x.phone) + "</span></div>" +
     '<div class="kv"><span>Category</span><span>' + esc(cat ? cat.name : "") + "</span></div>" +
     '<div class="kv"><span>Shehr</span><span>' + esc(x.city) + "</span></div></div>" +
@@ -538,6 +550,7 @@ VIEWS.detail = function (p) {
   $("dFav").onclick = () => { const on = toggleFav(x.id); toast(on ? "Pasandida mein jod diya" : "Pasandida se hata diya"); VIEWS.detail(p); };
   $("dShare").onclick = () => { const s = t + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME; if (navigator.share) navigator.share({ text: s }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast("Copy ho gaya")); };
   $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; const nn = (prompt("Sahi number pata ho to likhein (warna khali chhor dein)") || "").trim().slice(0, 20); try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300), at: new Date().toISOString(), pName: String(x.shopName || x.name || "").slice(0, 60), pPhone: String(x.phone || "").slice(0, 16), newPhone: nn }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
+  if (x.hasWork && !x.workPhotoB64 && DB) DB.collection("photos").doc(x.id).get().then(d => { const w = d.exists ? safeImg(d.data().work) : "", el = $("dWork"); if (w && el) el.innerHTML = '<div class="card" style="padding:8px"><img alt="Kaam ki tasveer" src="' + w + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block"></div>'; }).catch(() => {});
   $("dRemove").onclick = async () => { if (!confirm("Is listing ko hatane ki darkhwast admin ko bhejein? Admin number par rabta kar ke tasdeeq karega.")) return; try { await DB.collection("removals").add({ providerId: x.id, phone: String(x.phone || "").slice(0, 16), pName: String(x.shopName || x.name || "").slice(0, 60), byOwner: isMine(x.id), at: new Date().toISOString() }); toast("Darkhwast admin tak pahunch gayi"); } catch (e) { toast("Nahi bheja ja saka"); } };
 };
 
@@ -750,20 +763,26 @@ VIEWS.adminDraw = function (p) {
     try {
       if (a === "ok") {
         const rec = pend.find(r => r.id === id), d = Object.assign({}, rec); delete d.id;
-        if (rec.rt === "route") await DB.collection("routes").doc(id).set(d);
+        if (rec.rt === "route") { d.approvedAt = new Date().toISOString(); await DB.collection("routes").doc(id).set(d); }
         else {
           let pid = id;
           if (rec.editOf) { pid = rec.editOf; const old = DATA.providers.find(x => x.id === pid); if (old && old.ownerUid !== rec.ownerUid && !confirm("Ye tabdeeli asli maalik ki taraf se nahi lagti. Phir bhi manzoor karein?")) return; delete d.editOf; }
-          d.approvedAt = new Date().toISOString(); await DB.collection("providers").doc(pid).set(d);
+          d.approvedAt = new Date().toISOString();
+          const wk = d.workPhotoB64; delete d.workPhotoB64;
+          if (wk) d.hasWork = true;
+          else if (rec.editOf) { const old2 = DATA.providers.find(x => x.id === pid); if (old2 && old2.workPhotoB64) d.workPhotoB64 = old2.workPhotoB64; d.hasWork = !!(old2 && (old2.hasWork || old2.workPhotoB64)); }
+          else d.hasWork = false;
+          await DB.collection("providers").doc(pid).set(d);
+          if (wk) await DB.collection("photos").doc(pid).set({ work: wk });
         }
         await DB.collection("pending").doc(id).delete(); toast("Manzoor ho gaya"); rf();
       } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { await DB.collection("pending").doc(id).delete(); toast("Radd kar diya"); rf(); } }
-      else if (a === "del") { if (confirm("Ye record hata dein?")) { await DB.collection(DATA.routes.some(r => r.id === id) ? "routes" : "providers").doc(id).delete(); toast("Hata diya"); rf(); } }
-      else if (a === "vf") { const rc = appr.find(r => r.id === id); await DB.collection("providers").doc(id).update({ verified: !(rc && rc.verified === true) }); toast("Ho gaya"); rf(); }
+      else if (a === "del") { if (confirm("Ye record hata dein?")) { await DB.collection(DATA.routes.some(r => r.id === id) ? "routes" : "providers").doc(id).delete(); await tomb(id); await delPhoto(id); toast("Hata diya"); rf(); } }
+      else if (a === "vf") { const rc = appr.find(r => r.id === id); await DB.collection("providers").doc(id).update({ verified: !(rc && rc.verified === true), approvedAt: new Date().toISOString() }); toast("Ho gaya"); rf(); }
       else if (a === "rmdel") { await DB.collection("removals").doc(id).delete(); toast("Radd kar di"); rf(); }
-      else if (a === "rmok") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await DB.collection("removals").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
+      else if (a === "rmok") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await tomb(id); await delPhoto(id); await DB.collection("removals").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
       else if (a === "rdel") { await DB.collection("reports").doc(id).delete(); toast("Report hata di"); rf(); }
-      else if (a === "pdel") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await DB.collection("reports").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
+      else if (a === "pdel") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await tomb(id); await delPhoto(id); await DB.collection("reports").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
       else if (a === "ed") {
         const rec = (tab === "pending" ? pend : appr).find(r => r.id === id);
         $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" + (rec.shopName ? '<div class="fld"><label>Dukan ka naam</label><input class="inp" id="eS" value="' + esc(rec.shopName) + '"></div>' : "") +
@@ -772,6 +791,7 @@ VIEWS.adminDraw = function (p) {
         $("eSave").onclick = async () => {
           const u = { name: $("eN").value.trim() || rec.name, workText: $("eW").value.trim() || rec.workText, area: $("eA").value.trim() || rec.area };
           if ($("eS")) u.shopName = $("eS").value.trim() || rec.shopName;
+          if (tab !== "pending") u.approvedAt = new Date().toISOString();
           try { await DB.collection(tab === "pending" ? "pending" : "providers").doc(id).update(u); $("ov").classList.remove("on"); toast("Tabdeel ho gaya"); rf(); } catch (e) { toast("Nakaam: " + (e.code || "error")); }
         };
       }
