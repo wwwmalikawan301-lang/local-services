@@ -224,6 +224,7 @@ const ICONS = {
 const ic = n => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || "") + '</svg>';
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const safeImg = s => (typeof s === "string" && s.length < 150000 && /^data:image[/](jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(s)) ? s : "";
+const last10 = ph => String(ph || "").replace(/[^0-9]/g, "").slice(-10);
 const $ = id => document.getElementById(id);
 
 /* ================== Chhoti madad ================== */
@@ -532,11 +533,12 @@ VIEWS.detail = function (p) {
     (isMine(x.id) ? (waitEdit ? '<div class="note">' + ic("clock") + "<span>Aap ki tabdeeli manzoori ke intezar mein hai. Tab tak purana data nazar aaye ga.</span></div>" : "") + '<button class="cta green" id="dEdit">' + ic("pencil") + "Apni detail tabdeel karein</button>" : "") +
     '<div class="acts" style="margin-top:0"><button class="btn ghost" id="dFav">' + ic("heart") + (isFav(x.id) ? "Pasandida hai" : "Pasandida") + "</button>" +
     '<button class="btn ghost" id="dShare">' + ic("share") + "Share</button></div>" +
-    '<button class="link" id="dReport">' + ic("flag").replace("<svg", '<svg style="width:15px;height:15px;vertical-align:-3px"') + " Ghalat maloomat batayein</button>";
+    '<button class="link" id="dReport">' + ic("flag").replace("<svg", '<svg style="width:15px;height:15px;vertical-align:-3px"') + " Ghalat maloomat batayein</button>" + '<button class="link" id="dRemove">Ye mera number hai, hata dein</button>';
   if ($("dEdit")) $("dEdit").onclick = () => go("add", { edit: x.id });
   $("dFav").onclick = () => { const on = toggleFav(x.id); toast(on ? "Pasandida mein jod diya" : "Pasandida se hata diya"); VIEWS.detail(p); };
   $("dShare").onclick = () => { const s = t + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME; if (navigator.share) navigator.share({ text: s }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast("Copy ho gaya")); };
-  $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300), at: new Date().toISOString() }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
+  $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; const nn = (prompt("Sahi number pata ho to likhein (warna khali chhor dein)") || "").trim().slice(0, 20); try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300), at: new Date().toISOString(), pName: String(x.shopName || x.name || "").slice(0, 60), pPhone: String(x.phone || "").slice(0, 16), newPhone: nn }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
+  $("dRemove").onclick = async () => { if (!confirm("Is listing ko hatane ki darkhwast admin ko bhejein? Admin number par rabta kar ke tasdeeq karega.")) return; try { await DB.collection("removals").add({ providerId: x.id, phone: String(x.phone || "").slice(0, 16), pName: String(x.shopName || x.name || "").slice(0, 60), byOwner: isMine(x.id), at: new Date().toISOString() }); toast("Darkhwast admin tak pahunch gayi"); } catch (e) { toast("Nahi bheja ja saka"); } };
 };
 
 VIEWS.routes = function (p) {
@@ -652,7 +654,7 @@ VIEWS.add = function (p) {
     '<div id="ocBox" style="display:' + (v.city && !inList ? "block" : "none") + '">' + fld("fCity2", "Apne shehr ka naam", "Shehr likhein") + "</div>" +
     fld("fArea", "Gaon / mohalla", "Gaon ka naam") +
     '<button type="button" class="btn ghost" id="fGps" style="width:100%;margin-bottom:14px">' + ic("locate") + "Meri jagah khud bharein (GPS)</button>" +
-    '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke mera naam, number aur tasveer sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
+    '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke mera naam, number aur tasveer sab ko nazar aaye. <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a></span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
     '<button class="cta green" id="fSubmit">' + (e ? "Tabdeeli bhejein" : "Bhejein") + "</button></div>" +
     '<div class="note">' + ic("lock") + "<span>Aap ki detail admin ke paas jaye gi. Manzoori ke baad sab ko nazar aaye gi.</span></div>";
   $("fName").value = v.name || ""; $("fWork2").value = v.workText || ""; $("fArea").value = v.area || ""; $("fShop").value = v.shopName || ""; $("fTag").value = v.kind === "shop" ? (v.tag || "") : ""; if (v.city && !inList) $("fCity2").value = v.city;
@@ -682,7 +684,7 @@ VIEWS.add = function (p) {
     er = bad("fArea", "Gaon ya mohalla likhein.", area.length < 2) || er;
     const ok = $("fConsent").checked; $("e_fConsent").textContent = "Ijazat zaroori hai."; $("e_fConsent").classList.toggle("show", !ok); er = !ok || er;
     if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, #e_fConsent.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
-    if (DATA.providers.some(z => z.rt !== "route" && z.phone === pn.phone && (!e || z.id !== e.id))) { toast("Ye number pehle se darj hai"); return; }
+    if (DATA.providers.some(z => z.rt !== "route" && last10(z.phone) === last10(pn.phone) && (!e || z.id !== e.id))) { toast("Ye number pehle se darj hai"); return; }
     const rec = { id: (e ? "e" : "p") + Date.now(), kind, shopName: shop ? sn : "", name, categoryId: shop ? "dukan" : cat, tag: shop ? tg : catById(cat).name, workText: work, phone: pn.phone, whatsapp: pn.whatsapp, city, area, lat: pos ? pos.lat : null, lng: pos ? pos.lng : null, dpB64: photos.dp, workPhotoB64: photos.work, consent: true, createdAt: new Date().toISOString() };
     if (e) rec.editOf = e.id;
     const sb = $("fSubmit"); sb.disabled = true; sendPending(rec).then(ok => { sb.disabled = false; if (ok) go("added", {}, { replace: true }); });
@@ -697,7 +699,7 @@ VIEWS.addroute = function () {
     fld("rTo", "Aakhri stop", "Maslan: Jhelum") +
     '<div class="fld"><label>Gari ki qisam</label><div class="seg" id="vseg">' + ["Bus", "Car", "Hiace", "Van"].map(x => '<button type="button" data-v="' + x + '">' + x + "</button>").join("") + "</div></div>" +
     '<div class="fld"><label>Chalne ka waqt (pehle stop se)</label><div class="rows" id="timeBox"></div><button type="button" class="btn ghost" id="timeAdd" style="width:100%">+ Waqt jodein</button><div class="ferr" id="e_timeBox"></div></div>' +
-    phoneBox({}).html + '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke ye number aur safar sab ko nazar aaye.</span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
+    phoneBox({}).html + '<label class="chk"><input type="checkbox" id="fConsent"><span>Mujhe manzoor hai ke ye number aur safar sab ko nazar aaye. <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a></span></label><div class="ferr" id="e_fConsent" style="margin:-8px 0 10px"></div>' +
     '<button class="cta green" id="rSubmit">Bhejein</button></div>' +
     '<div class="note">' + ic("lock") + "<span>Aap ka safar admin jaanch kar ke dikhaye ga.</span></div>";
   const stops = dynRows("stopBox", "text", "Stop ka naam", []), times = dynRows("timeBox", "time", "", []);
@@ -728,17 +730,20 @@ VIEWS.adminDraw = function (p) {
   const tab = p.tab || "pending", pend = ADM.pend, appr = DATA.providers.filter(x => x.rt !== "route"), rts = DATA.routes;
   setHeader({ title: "Admin", sub: "Sirf maalik", right: '<div class="hbtn">' + ic("lock") + "</div>" });
   const list = tab === "pending" ? pend : appr.concat(rts);
+  const dupOf = x => DATA.providers.some(z => z.rt !== "route" && z.id !== x.id && last10(z.phone) === last10(x.phone)) || pend.some(z => z.id !== x.id && z.rt !== "route" && last10(z.phone) === last10(x.phone));
   const row = x => x.rt === "route" ?
     '<div class="card"><div class="pname">' + esc(x.from) + " &rarr; " + esc(x.to) + (tab === "pending" ? ' <span class="bdg">Safar</span>' : "") + '</div><div class="pwork">' + esc(x.vehicle) + " · " + esc((x.stops || []).join(", ") || "seedha") + " · " + x.times.map(fmt12).join(", ") + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + "</div>" :
-    '<div class="card"><div class="prow" style="cursor:default">' + avatar({ name: x.shopName || x.name, dpB64: x.dpB64 }) + '<div class="pinfo"><div class="pname">' + esc(x.shopName || x.name) + (tab === "pending" ? (x.editOf ? ' <span class="bdg">Tabdeeli</span>' : ' <span class="bdg">Naya</span>') : "") + "</div>" +
+    '<div class="card"><div class="prow" style="cursor:default">' + avatar({ name: x.shopName || x.name, dpB64: x.dpB64 }) + '<div class="pinfo"><div class="pname">' + esc(x.shopName || x.name) + (tab === "pending" ? (x.editOf ? ' <span class="bdg">Tabdeeli</span>' : ' <span class="bdg">Naya</span>') : "") + (tab === "pending" && !x.editOf && dupOf(x) ? ' <span class="bdg" style="background:#fde2e2;color:#a11">Number duplicate</span>' : "") + "</div>" +
     (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
     (safeImg(x.workPhotoB64) ? '<img alt="" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
   const acts = x => tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button>' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
     : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ok" data-a="vf" data-id="' + x.id + '">' + (x.verified === true ? "Verified hatayein" : "Verified karein") + "</button>") + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
-  const reps = ADM.reps || [];
-  const repHtml = () => reps.length ? reps.map(r => { const pr = DATA.providers.find(z => z.id === r.providerId); return '<div class="card"><div class="pname">' + esc(pr ? (pr.shopName || pr.name) : "(hata diya gaya)") + '</div><div class="pwork">' + esc(r.reason) + '</div><div class="ploc">' + esc(pr ? pr.phone : "") + " · " + ago(r.at) + '</div><div class="acts">' + (pr ? '<button class="btn no" data-a="pdel" data-id="' + esc(pr.id) + '" data-rid="' + esc(r.id) + '">Listing hatayein</button>' : "") + '<button class="btn ed" data-a="rdel" data-id="' + esc(r.id) + '">Report hatayein</button></div></div>'; }).join("") : emptyBox("Koi report nahi.", false);
-  $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button>" + '<button class="chip ' + (tab === "reports" ? "on" : "") + '" data-tab="reports">Reports (' + reps.length + ")</button></div>" +
-    (tab === "reports" ? repHtml() : list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
+  const reps = ADM.reps || [], rems = ADM.rems || [];
+  const callBtns = ph => { const d = String(ph || "").replace(/[^0-9+]/g, ""); return d ? '<a class="btn ed" href="tel:' + d + '">Call</a><a class="btn ok" href="' + esc(waLink(d, "")) + '" target="_blank" rel="noopener">WhatsApp</a>' : ""; };
+  const remHtml = () => rems.length ? rems.map(r => { const pr = DATA.providers.find(z => z.id === r.providerId); return '<div class="card"><div class="pname">' + esc(pr ? (pr.shopName || pr.name) : (r.pName || "(hata diya gaya)")) + '</div><div class="pwork">' + (r.byOwner ? "Maalik ki taraf se" : "Kisi aur ne kaha ye mera number hai") + '</div><div class="ploc">Number: ' + esc(pr ? pr.phone : (r.phone || "")) + " · " + ago(r.at) + '</div><div class="acts">' + callBtns(pr ? pr.phone : r.phone) + (pr ? '<button class="btn no" data-a="rmok" data-id="' + esc(pr.id) + '" data-rid="' + esc(r.id) + '">Listing hatayein</button>' : "") + '<button class="btn ed" data-a="rmdel" data-id="' + esc(r.id) + '">Radd karein</button></div></div>'; }).join("") : emptyBox("Koi darkhwast nahi.", false);
+  const repHtml = () => reps.length ? reps.map(r => { const pr = DATA.providers.find(z => z.id === r.providerId); return '<div class="card"><div class="pname">' + esc(pr ? (pr.shopName || pr.name) : (r.pName || "(hata diya gaya)")) + '</div><div class="pwork">' + esc(r.reason) + '</div><div class="ploc">Number: ' + esc(pr ? pr.phone : (r.pPhone || "")) + (r.newPhone ? " · Sahi number bataya: " + esc(r.newPhone) : "") + " · " + ago(r.at) + '</div><div class="acts">' + callBtns(pr ? pr.phone : r.pPhone) + (r.newPhone ? callBtns(r.newPhone) : "") + (pr ? '<button class="btn no" data-a="pdel" data-id="' + esc(pr.id) + '" data-rid="' + esc(r.id) + '">Listing hatayein</button>' : "") + '<button class="btn ed" data-a="rdel" data-id="' + esc(r.id) + '">Report hatayein</button></div></div>'; }).join("") : emptyBox("Koi report nahi.", false);
+  $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button>" + '<button class="chip ' + (tab === "reports" ? "on" : "") + '" data-tab="reports">Reports (' + reps.length + ")</button>" + '<button class="chip ' + (tab === "removals" ? "on" : "") + '" data-tab="removals">Hatane (' + rems.length + ")</button></div>" +
+    (tab === "reports" ? repHtml() : tab === "removals" ? remHtml() : list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { saveParams({ tab: b.dataset.tab }); VIEWS.admin(cur.params); });
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
     const id = b.dataset.id, a = b.dataset.a, rf = async () => { await loadRemote(); VIEWS.admin(cur.params); updateNav(); };
@@ -755,6 +760,8 @@ VIEWS.adminDraw = function (p) {
       } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { await DB.collection("pending").doc(id).delete(); toast("Radd kar diya"); rf(); } }
       else if (a === "del") { if (confirm("Ye record hata dein?")) { await DB.collection(DATA.routes.some(r => r.id === id) ? "routes" : "providers").doc(id).delete(); toast("Hata diya"); rf(); } }
       else if (a === "vf") { const rc = appr.find(r => r.id === id); await DB.collection("providers").doc(id).update({ verified: !(rc && rc.verified === true) }); toast("Ho gaya"); rf(); }
+      else if (a === "rmdel") { await DB.collection("removals").doc(id).delete(); toast("Radd kar di"); rf(); }
+      else if (a === "rmok") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await DB.collection("removals").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
       else if (a === "rdel") { await DB.collection("reports").doc(id).delete(); toast("Report hata di"); rf(); }
       else if (a === "pdel") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await DB.collection("reports").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
       else if (a === "ed") {
@@ -789,6 +796,7 @@ VIEWS.admin = async function (p) {
   catch (e) { $("app").innerHTML = emptyBox("Pending list nahi khuli: " + (e.code || "error"), false); return; }
   watchPending();
   try { const rq = await DB.collection("reports").get(); ADM.reps = rq.docs.map(d => Object.assign({}, d.data(), { id: d.id })).sort((a, b) => String(b.at || "").localeCompare(String(a.at || ""))); } catch (e) { ADM.reps = []; }
+  try { const mq = await DB.collection("removals").get(); ADM.rems = mq.docs.map(d => Object.assign({}, d.data(), { id: d.id })).sort((a, b) => String(b.at || "").localeCompare(String(a.at || ""))); } catch (e) { ADM.rems = []; }
   updateNav(); adminShow(p);
 };
 function adminShow(p) {
