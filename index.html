@@ -379,7 +379,7 @@ function card(p) {
   const msg = "Assalam o Alaikum, main ne aap ka number " + APP_NAME + " app se liya hai. Mujhe aap ke kaam ki zaroorat hai.";
   return '<div class="card" data-id="' + esc(p.id) + '">' +
     '<div class="prow" data-open="' + esc(p.id) + '">' + avatar({ name: t, dpB64: p.dpB64 }) +
-    '<div class="pinfo"><div class="pname">' + esc(t) + ic("verified") + "</div>" +
+    '<div class="pinfo"><div class="pname">' + esc(t) + (p.verified === true ? ic("verified") : "") + "</div>" +
     (p.shopName ? '<div class="ploc">Maalik: ' + esc(p.name) + "</div>" : "") +
     '<div class="pwork">' + esc(p.workText) + "</div>" +
     (loc ? '<div class="ploc">' + ic("pin") + esc(loc + d) + "</div>" : "") + "</div>" +
@@ -518,7 +518,7 @@ VIEWS.detail = function (p) {
   setHeader({ title: t, sub: cat ? cat.name : "" });
   $("app").innerHTML =
     '<div class="card" style="text-align:center;padding:20px 14px"><div style="display:flex;justify-content:center;margin-bottom:10px">' + avatar({ name: t, dpB64: x.dpB64 }, true) + "</div>" +
-    '<div class="pname" style="justify-content:center;font-size:19px">' + esc(t) + ic("verified") + "</div>" +
+    '<div class="pname" style="justify-content:center;font-size:19px">' + esc(t) + (x.verified === true ? ic("verified") : "") + "</div>" +
     (x.shopName ? '<div class="ploc" style="justify-content:center">Maalik: ' + esc(x.name) + "</div>" : "") +
     (x.tag ? '<span class="tag">' + esc(x.tag) + "</span>" : "") +
     '<div style="margin-top:10px;color:var(--muted);font-size:14px">' + esc(x.workText) + "</div>" +
@@ -536,7 +536,7 @@ VIEWS.detail = function (p) {
   if ($("dEdit")) $("dEdit").onclick = () => go("add", { edit: x.id });
   $("dFav").onclick = () => { const on = toggleFav(x.id); toast(on ? "Pasandida mein jod diya" : "Pasandida se hata diya"); VIEWS.detail(p); };
   $("dShare").onclick = () => { const s = t + " - " + x.workText + " (" + x.phone + ") - " + APP_NAME; if (navigator.share) navigator.share({ text: s }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast("Copy ho gaya")); };
-  $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300) }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
+  $("dReport").onclick = async () => { const r = (prompt("Kya ghalat hai? (kam az kam 3 harf)") || "").trim(); if (r.length < 3) return; try { await DB.collection("reports").add({ providerId: x.id, reason: r.slice(0, 300), at: new Date().toISOString() }); toast("Shukriya, admin tak pahunch gaya"); } catch (e) { toast("Nahi bheja ja saka"); } };
 };
 
 VIEWS.routes = function (p) {
@@ -682,6 +682,7 @@ VIEWS.add = function (p) {
     er = bad("fArea", "Gaon ya mohalla likhein.", area.length < 2) || er;
     const ok = $("fConsent").checked; $("e_fConsent").textContent = "Ijazat zaroori hai."; $("e_fConsent").classList.toggle("show", !ok); er = !ok || er;
     if (er) { toast("Ghalat ya khali jagah theek karein"); const f = document.querySelector(".inp.err, #e_fConsent.show"); if (f) f.scrollIntoView({ block: "center" }); return; }
+    if (DATA.providers.some(z => z.rt !== "route" && z.phone === pn.phone && (!e || z.id !== e.id))) { toast("Ye number pehle se darj hai"); return; }
     const rec = { id: (e ? "e" : "p") + Date.now(), kind, shopName: shop ? sn : "", name, categoryId: shop ? "dukan" : cat, tag: shop ? tg : catById(cat).name, workText: work, phone: pn.phone, whatsapp: pn.whatsapp, city, area, lat: pos ? pos.lat : null, lng: pos ? pos.lng : null, dpB64: photos.dp, workPhotoB64: photos.work, consent: true, createdAt: new Date().toISOString() };
     if (e) rec.editOf = e.id;
     const sb = $("fSubmit"); sb.disabled = true; sendPending(rec).then(ok => { sb.disabled = false; if (ok) go("added", {}, { replace: true }); });
@@ -733,9 +734,11 @@ VIEWS.adminDraw = function (p) {
     (x.shopName ? '<div class="ploc">Maalik: ' + esc(x.name) + "</div>" : "") + '<div class="pwork">' + esc(x.workText) + '</div><div class="ploc">' + esc(x.phone) + " · " + ago(stamp(x)) + '</div><div class="ploc">' + ic("pin") + esc(x.area + ", " + x.city) + "</div></div></div>" +
     (safeImg(x.workPhotoB64) ? '<img alt="" src="' + safeImg(x.workPhotoB64) + '" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:10px;display:block">' : "");
   const acts = x => tab === "pending" ? '<div class="acts"><button class="btn ok" data-a="ok" data-id="' + x.id + '">' + ic("check") + 'Manzoor</button>' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="no" data-id="' + x.id + '">' + ic("x") + "Radd</button></div>"
-    : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
-  $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button></div>" +
-    (list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
+    : '<div class="acts">' + (x.rt === "route" ? "" : '<button class="btn ok" data-a="vf" data-id="' + x.id + '">' + (x.verified === true ? "Verified hatayein" : "Verified karein") + "</button>") + (x.rt === "route" ? "" : '<button class="btn ed" data-a="ed" data-id="' + x.id + '">' + ic("pencil") + "Tabdeel</button>") + '<button class="btn no" data-a="del" data-id="' + x.id + '">' + ic("x") + "Hatayein</button></div>";
+  const reps = ADM.reps || [];
+  const repHtml = () => reps.length ? reps.map(r => { const pr = DATA.providers.find(z => z.id === r.providerId); return '<div class="card"><div class="pname">' + esc(pr ? (pr.shopName || pr.name) : "(hata diya gaya)") + '</div><div class="pwork">' + esc(r.reason) + '</div><div class="ploc">' + esc(pr ? pr.phone : "") + " · " + ago(r.at) + '</div><div class="acts">' + (pr ? '<button class="btn no" data-a="pdel" data-id="' + esc(pr.id) + '" data-rid="' + esc(r.id) + '">Listing hatayein</button>' : "") + '<button class="btn ed" data-a="rdel" data-id="' + esc(r.id) + '">Report hatayein</button></div></div>'; }).join("") : emptyBox("Koi report nahi.", false);
+  $("app").innerHTML = '<div class="chips"><button class="chip ' + (tab === "pending" ? "on" : "") + '" data-tab="pending">Intezar mein (' + pend.length + ')</button><button class="chip ' + (tab === "approved" ? "on" : "") + '" data-tab="approved">Manzoor (' + (appr.length + rts.length) + ")</button>" + '<button class="chip ' + (tab === "reports" ? "on" : "") + '" data-tab="reports">Reports (' + reps.length + ")</button></div>" +
+    (tab === "reports" ? repHtml() : list.length ? list.map(x => row(x) + acts(x) + "</div>").join("") : emptyBox(tab === "pending" ? "Koi nayi darkhwast nahi." : "Abhi koi manzoor shuda nahi.", false));
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { saveParams({ tab: b.dataset.tab }); VIEWS.admin(cur.params); });
   document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
     const id = b.dataset.id, a = b.dataset.a, rf = async () => { await loadRemote(); VIEWS.admin(cur.params); updateNav(); };
@@ -751,6 +754,9 @@ VIEWS.adminDraw = function (p) {
         await DB.collection("pending").doc(id).delete(); toast("Manzoor ho gaya"); rf();
       } else if (a === "no") { if (confirm("Ye darkhwast radd karein?")) { await DB.collection("pending").doc(id).delete(); toast("Radd kar diya"); rf(); } }
       else if (a === "del") { if (confirm("Ye record hata dein?")) { await DB.collection(DATA.routes.some(r => r.id === id) ? "routes" : "providers").doc(id).delete(); toast("Hata diya"); rf(); } }
+      else if (a === "vf") { const rc = appr.find(r => r.id === id); await DB.collection("providers").doc(id).update({ verified: !(rc && rc.verified === true) }); toast("Ho gaya"); rf(); }
+      else if (a === "rdel") { await DB.collection("reports").doc(id).delete(); toast("Report hata di"); rf(); }
+      else if (a === "pdel") { if (confirm("Ye listing hata dein?")) { await DB.collection("providers").doc(id).delete(); await DB.collection("reports").doc(b.dataset.rid).delete(); toast("Hata diya"); rf(); } }
       else if (a === "ed") {
         const rec = (tab === "pending" ? pend : appr).find(r => r.id === id);
         $("sheet").innerHTML = "<h2>Tabdeel karein</h2>" + (rec.shopName ? '<div class="fld"><label>Dukan ka naam</label><input class="inp" id="eS" value="' + esc(rec.shopName) + '"></div>' : "") +
@@ -781,7 +787,9 @@ VIEWS.admin = async function (p) {
   $("app").innerHTML = '<div class="loading">Load ho raha hai...</div>';
   try { const q = await DB.collection("pending").get(); ADM.pend = sortP(q.docs.map(d => Object.assign({}, d.data(), { id: d.id }))); }
   catch (e) { $("app").innerHTML = emptyBox("Pending list nahi khuli: " + (e.code || "error"), false); return; }
-  watchPending(); updateNav(); adminShow(p);
+  watchPending();
+  try { const rq = await DB.collection("reports").get(); ADM.reps = rq.docs.map(d => Object.assign({}, d.data(), { id: d.id })).sort((a, b) => String(b.at || "").localeCompare(String(a.at || ""))); } catch (e) { ADM.reps = []; }
+  updateNav(); adminShow(p);
 };
 function adminShow(p) {
   VIEWS.adminDraw(p);
